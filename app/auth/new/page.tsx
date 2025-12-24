@@ -1,9 +1,9 @@
-import Login from "@/components/features/auth/Login";
+import SignUp from "@/components/features/auth/Signup";
 
 export default function page() {
   return (
     <div className="w-full min-h-screen flex items-center justify-center">
-        <Login name="Login"/>
+        <SignUp name="Create a New Account"/>
     </div>
   )
 }

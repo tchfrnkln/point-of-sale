@@ -1,9 +1,9 @@
-import Login from "@/components/features/auth/Login";
+import RecoverUser from "@/components/features/auth/Recover";
 
 export default function page() {
   return (
     <div className="w-full min-h-screen flex items-center justify-center">
-        <Login name="Login"/>
+        <RecoverUser name="Recover Account"/>
     </div>
   )
 }
