@@ -15,14 +15,12 @@ import AuthNavBar from "../../layout/AuthNav";
 export default function SignUp({name}:{name:string}) {
 
     const {
+    email,
     username,
     password,
-    repassword,
-    adminKey,
+    setEmail,
     setUsername,
     setPassword,
-    setRePassword,
-    setAdminKey,
     signup,
     loading,
   } = useAuthStore()
@@ -32,6 +30,13 @@ export default function SignUp({name}:{name:string}) {
       <FieldSet>
         <h1 className="font-bold text-3xl">{name}</h1>
         <FieldGroup>
+          <Field>
+            <FieldLabel htmlFor="email">Email</FieldLabel>
+            <Input id="repassword" type="email" 
+            value={email}
+            onChange={(e) => setEmail(e.target.value)} 
+            placeholder="mail@gmail.com" required />
+          </Field>
           <Field>
             <FieldLabel htmlFor="username">Username</FieldLabel>
             <Input id="username" type="text" placeholder="Max Leiter" 
@@ -50,24 +55,6 @@ export default function SignUp({name}:{name:string}) {
             <Input id="password" type="password" 
             value={password}
             onChange={(e) => setPassword(e.target.value)} 
-            placeholder="••••••••" required />
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="password">Repeat Password</FieldLabel>
-            <FieldDescription>
-              Repeat your password.
-            </FieldDescription>
-            <Input id="repassword" type="password" 
-            value={repassword}
-            onChange={(e) => setRePassword(e.target.value)} 
-            placeholder="••••••••" required />
-          </Field>
-          
-          <Field>
-            <FieldLabel htmlFor="password">Admin Key</FieldLabel>
-            <Input id="adminKey" type="password" 
-            value={adminKey}
-            onChange={(e) => setAdminKey(e.target.value)} 
             placeholder="••••••••" required />
           </Field>
 

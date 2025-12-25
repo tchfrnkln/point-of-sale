@@ -17,10 +17,8 @@ export default function RecoverUser({name}:{name:string}) {
     const {
     username,
     password,
-    adminKey,
     setUsername,
     setPassword,
-    setAdminKey,
     recover,
     loading,
   } = useAuthStore()
@@ -48,16 +46,6 @@ export default function RecoverUser({name}:{name:string}) {
             <Input id="password" type="password" 
             value={password}
             onChange={(e) => setPassword(e.target.value)} 
-            placeholder="••••••••" required />
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="password">Admin Key</FieldLabel>
-            <FieldDescription>
-              {/* Repeat your password. */}
-            </FieldDescription>
-            <Input id="adminKey" type="password" 
-            value={adminKey}
-            onChange={(e) => setAdminKey(e.target.value)} 
             placeholder="••••••••" required />
           </Field>
 

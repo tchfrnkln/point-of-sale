@@ -9,7 +9,7 @@ export default function AuthNavBar({ active }: AuthNavBarProps) {
   const links = [
     { href: "/auth", label: "Login", key: "login" },
     { href: "/auth/new", label: "Create a new Account", key: "register" },
-    { href: "/auth/recover", label: "Reset a Forgotten Password", key: "recover" },
+    // { href: "/auth/recover", label: "Reset a Forgotten Password", key: "recover" },
   ]
 
   // Filter out the active link (optional: highlight instead of hiding if you prefer)

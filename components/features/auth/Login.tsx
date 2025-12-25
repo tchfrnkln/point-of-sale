@@ -35,7 +35,7 @@ export default function Login({name}:{name:string}) {
             onChange={(e) => setUsername(e.target.value)} 
             required/>
             <FieldDescription>
-              Choose a unique username for your account.
+              Enter your Username or Email
             </FieldDescription>
           </Field>
           <Field>
