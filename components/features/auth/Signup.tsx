@@ -18,11 +18,12 @@ export default function SignUp({name}:{name:string}) {
     username,
     password,
     repassword,
+    adminKey,
     setUsername,
     setPassword,
     setRePassword,
+    setAdminKey,
     signup,
-    error,
     loading,
   } = useAuthStore()
 
@@ -59,6 +60,14 @@ export default function SignUp({name}:{name:string}) {
             <Input id="repassword" type="password" 
             value={repassword}
             onChange={(e) => setRePassword(e.target.value)} 
+            placeholder="••••••••" required />
+          </Field>
+          
+          <Field>
+            <FieldLabel htmlFor="password">Admin Key</FieldLabel>
+            <Input id="adminKey" type="password" 
+            value={adminKey}
+            onChange={(e) => setAdminKey(e.target.value)} 
             placeholder="••••••••" required />
           </Field>
 

@@ -20,7 +20,6 @@ export default function Login({name}:{name:string}) {
     setUsername,
     setPassword,
     login,
-    error,
     loading,
   } = useAuthStore()
 

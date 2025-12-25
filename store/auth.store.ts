@@ -70,7 +70,9 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   },
 
   signup: async () => {
-    const { username, password, repassword } = get()
+    const { username, password, repassword, adminKey } = get()
+
+    const fetchAdminkey = "" //function here
 
     if (!username || !password || !repassword){
       toast.error("Username and password are required.")
@@ -78,6 +80,9 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     }else if(password !== repassword){
       toast.error("Passwords do not match.")
       return set({ error: "Passwords do not match." })
+    }else if(adminKey !== fetchAdminkey){
+      toast.error("Admin key does not match")
+      return set({ error: "Admin key does not match" })
     }else{
       set({ error: null })
     }

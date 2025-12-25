@@ -22,7 +22,6 @@ export default function RecoverUser({name}:{name:string}) {
     setPassword,
     setAdminKey,
     recover,
-    error,
     loading,
   } = useAuthStore()
 
