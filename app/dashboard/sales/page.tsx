@@ -18,6 +18,8 @@ import { useSalesAnalyticsStore } from "@/store/sales.store";
 import DailySalesBarChart from "@/components/features/dashboard/sales/DailyChart";
 import WeeklySalesLineChart from "@/components/features/dashboard/sales/WeeklyChart";
 import StaffSalesPieChart from "@/components/features/dashboard/sales/StaffChart";
+import { ExportPopover } from "@/components/features/dashboard/sales/Exports/PopOver";
+import { handleExcelExport, handlePDFExport } from "@/lib/exports/handler";
 
 
 export default function AdminSalesPage() {
@@ -117,10 +119,19 @@ export default function AdminSalesPage() {
 
       <Separator />
 
-      <div className="flex gap-2">
-        <Button variant="outline">Export Excel</Button>
-        <Button variant="outline">Export PDF</Button>
-      </div>
+
+        <div className="flex gap-2">
+            <ExportPopover
+                label="Export Excel"
+                onConfirm={(range) => handleExcelExport(range, store)}
+            />
+
+            <ExportPopover
+                label="Export PDF"
+                onConfirm={(range) => handlePDFExport(range, store)}
+            />
+        </div>
+
     </div>
   );
 }

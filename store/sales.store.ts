@@ -20,7 +20,7 @@ export type StaffPerformance = {
   transactions: number;
 };
 
-type SalesAnalyticsState = {
+export type SalesAnalyticsState = {
   daily: SalesSummary[];
   weekly: SalesSummary[];
   monthly: SalesSummary[];
