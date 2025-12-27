@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { PaymentType, usePOSStore } from "@/store/pos.store";
 import { toast } from "sonner";
 import { findProduct } from "@/lib/inventory/inventory";
+import { useRef } from "react";
 
 export default function POSPage() {
 
@@ -23,6 +24,9 @@ export default function POSPage() {
   const paid = payments.reduce((sum, p) => sum + p.amount, 0);
   const balance = total - paid;
 
+  const inputRef = useRef<HTMLInputElement>(null);
+
+
   return (
     <div className="min-h-screen w-full p-4">
       <h1 className="text-4xl font-bold py-6">Point Of Sale</h1>
@@ -31,11 +35,12 @@ export default function POSPage() {
         {/* LEFT — SCAN & CART */}
         <div className="col-span-2 space-y-4">
           <Input
+            ref={inputRef}
             autoFocus
             placeholder="Scan barcode or enter product name"
             onKeyDown={async e => {
               if (e.key !== "Enter") return;
-              const query = e.currentTarget.value.trim();
+              const query = inputRef.current?.value.trim();
               if (!query) return;
 
               const product = await findProduct(query);
@@ -51,9 +56,7 @@ export default function POSPage() {
                 stockLeft: product.stock_amount
               });
 
-                if(e.currentTarget?.value){
-                    e.currentTarget.value = ""
-                }
+                if (inputRef.current) inputRef.current.value = "";
             }}
           />
 
@@ -129,9 +132,17 @@ export default function POSPage() {
           <Separator />
 
           <Button className="w-full" onClick={suspendSale}>Suspend Sale</Button>
-          {suspendedSales.length > 0 && suspendedSales.map((_, i) => (
-            <Button key={i} className="w-full" variant="outline" onClick={() => resumeSale(i)}>Resume Sale #{i + 1}</Button>
-          ))}
+          {suspendedSales.length > 0 && 
+            suspendedSales.map(sale => (
+                <Button
+                    key={sale.id}
+                    className="w-full"
+                    variant="outline"
+                    onClick={() => resumeSale(sale.id)}
+                >
+                    Resume Sale #{sale.id}
+                </Button>
+            ))}
 
           <Button className="w-full" variant="destructive" onClick={clearSale}>Cancel Sale</Button>
         </div>

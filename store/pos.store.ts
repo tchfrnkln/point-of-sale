@@ -1,3 +1,4 @@
+import { toast } from "sonner"
 import { create } from "zustand"
 
 export type CartItem = {
@@ -16,21 +17,28 @@ export type PaymentMethod = {
   amount: number
 }
 
-type POSStore = {
+export type SuspendedSale = {
+  id: number 
   cart: CartItem[]
-  suspendedSales: CartItem[][]
+}
+
+type POSStore = {
+  ticketCounter: number
+  cart: CartItem[]
+  suspendedSales: SuspendedSale[]
   payments: PaymentMethod[]
 
   addItem: (item: CartItem) => void
   updateQty: (id: string, qty: number) => void
   removeItem: (id: string) => void
   suspendSale: () => void
-  resumeSale: (index: number) => void
+  resumeSale: (id: number) => void
   clearSale: () => void
   addPayment: (payment: PaymentMethod) => void
 }
 
 export const usePOSStore = create<POSStore>((set, get) => ({
+  ticketCounter: 1,
   cart: [],
   suspendedSales: [],
   payments: [],
@@ -62,18 +70,36 @@ export const usePOSStore = create<POSStore>((set, get) => ({
   removeItem: id =>
     set({ cart: get().cart.filter(i => i.id !== id) }),
 
+  // Suspend Sale with persistent ticket numbers
   suspendSale: () =>
-    set({
-      suspendedSales: [...get().suspendedSales, get().cart],
-      cart: [],
-      payments: [],
+    set(state => {
+        if (state.cart.length === 0) {
+            toast.error("No items in the cart to suspend")
+            return state // return current state without changing anything
+        }
+      const ticket = state.ticketCounter
+      return {
+        suspendedSales: [...state.suspendedSales, { id: ticket, cart: state.cart }],
+        cart: [],
+        payments: [],
+        ticketCounter: state.ticketCounter + 1, // increment ticket
+      }
     }),
 
-  resumeSale: index =>
-    set(state => ({
-      cart: state.suspendedSales[index],
-      suspendedSales: state.suspendedSales.filter((_, i) => i !== index),
-    })),
+  // Resume Sale by ticket id
+  resumeSale: (id: number) =>
+    set(state => {
+      const sale = state.suspendedSales.find(s => s.id === id)
+      if (!sale) return state
+
+        const remainingSales = state.suspendedSales.filter(s => s.id !== id)
+
+      return {
+        cart: sale.cart,
+        suspendedSales: state.suspendedSales.filter(s => s.id !== id),
+        ticketCounter: remainingSales.length === 0 ? 1 : state.ticketCounter
+      }
+    }),
 
   clearSale: () =>
     set({ cart: [], payments: [] }),
