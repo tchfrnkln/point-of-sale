@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { PaymentType, usePOSStore } from "@/store/pos.store";
+import { businessInfo, PaymentType, printReceipt, usePOSStore } from "@/store/pos.store";
 import { toast } from "sonner";
 import { findProduct } from "@/lib/inventory/inventory";
 import { useRef } from "react";
@@ -130,6 +130,14 @@ export default function POSPage() {
           </Select>
 
           <Separator />
+
+            <Button
+                className="w-full bg-green-600 text-white hover:bg-green-700 disabled:bg-green-300"
+                disabled={cart.length === 0 || balance > 0}
+                onClick={() => printReceipt(cart, businessInfo)}
+                >
+                Print Receipt
+            </Button>
 
           <Button className="w-full" onClick={suspendSale}>Suspend Sale</Button>
           {suspendedSales.length > 0 && 
