@@ -58,7 +58,7 @@ export function InventoryTable() {
                 {index + 1}.
               </TableCell>
               <TableCell>{item.productName}</TableCell>
-              <TableCell>{item.stockAmount}</TableCell>
+              <TableCell>{item.stockAmount.toLocaleString()}</TableCell>
               <TableCell>
                 {item.cost.toLocaleString()}
               </TableCell>
@@ -67,7 +67,10 @@ export function InventoryTable() {
                   ? item.expiryDate.toLocaleDateString()
                   : '—'}
               </TableCell>
-              <TableDrawer itemId={item.id} name="edit" />
+              <TableCell className="text-right">
+                <TableDrawer itemId={item.id} name="Edit" />
+              </TableCell>
+              {/* <TableDrawer itemId={item.id} name="edit" /> */}
             </TableRow>
           ))}
         </TableBody>

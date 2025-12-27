@@ -14,14 +14,13 @@ import ItemForm from "./NewItem"
 export function TableDrawer({itemId, name}:{itemId: string, name:string}) {
   return (
     <Drawer>
-      <DrawerTrigger asChild>
+      <DrawerTrigger>
         <p className="text-xs cursor-pointer hover:text-green-700">{name}</p>
       </DrawerTrigger>
       <DrawerContent>
         <div className="mx-auto w-full max-w-sm">
           <DrawerHeader>
             <DrawerTitle>Inventory</DrawerTitle>
-            {/* <DrawerDescription>Set your daily activity goal.</DrawerDescription> */}
           </DrawerHeader>
 
           <DrawerFooter>
