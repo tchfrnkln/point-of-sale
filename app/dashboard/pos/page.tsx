@@ -7,12 +7,19 @@ import {
 } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { businessInfo, PaymentType, printReceipt, usePOSStore } from "@/store/pos.store";
+import { BusinessInfo, businessInfo, CartItem, PaymentType, usePOSStore } from "@/store/pos.store";
 import { toast } from "sonner";
 import { findProduct } from "@/lib/inventory/inventory";
-import { useRef } from "react";
+import { useEffect, useRef } from "react";
+import { useInventoryStore } from "@/store/inventory.store";
 
 export default function POSPage() {
+
+    const fetchInventory = useInventoryStore(s => s.fetchInventory)
+    
+      useEffect(() => {
+        fetchInventory()
+      }, [fetchInventory])
 
   const {
     cart, addItem, updateQty, removeItem,
@@ -20,11 +27,51 @@ export default function POSPage() {
     payments, addPayment, suspendedSales
   } = usePOSStore();
 
+  const {reduceStock} = useInventoryStore();
+
   const total = cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
   const paid = payments.reduce((sum, p) => sum + p.amount, 0);
   const balance = total - paid;
 
   const inputRef = useRef<HTMLInputElement>(null);
+
+
+  function printReceipt(cart: CartItem[], businessInfo: BusinessInfo) {
+    if (cart.length === 0) return;
+  
+    // Prepare receipt text
+    let receipt = "";
+  
+    // Business logo and name
+    if (businessInfo.logoUrl) {
+      receipt += `[LOGO: ${businessInfo.logoUrl}]\n`;
+    }
+    receipt += `*** ${businessInfo.name} ***\n\n`;
+  
+    // Cart items
+    cart.forEach(item => {
+      receipt += `${item.name} x${item.quantity} = ₦${(item.price * item.quantity).toLocaleString()}\n`;
+    });
+  
+    // Total
+    const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    receipt += `\nTOTAL: ₦${total.toLocaleString()}\n`;
+    receipt += "-----------------------\n";
+    receipt += "Thank you for your purchase!\n";
+  
+    // In Electron, you can send this string to the main process for printing
+    // Example:
+
+    if (window.electron) {
+        window.electron.print(receipt);
+        reduceStock(cart);
+        clearSale();
+        toast.success("Stock updated!");
+    } else {
+        toast.error("Electron not ready!");
+      console.log("Print output (Electron not ready):\n", receipt);
+    }
+  }
 
 
   return (

@@ -37,43 +37,14 @@ type POSStore = {
   addPayment: (payment: PaymentMethod) => void
 }
 
-type BusinessInfo = {
+export type BusinessInfo = {
   name: string
   logoUrl?: string
 }
 
-export const businessInfo: BusinessInfo = { name: "My Business", logoUrl: "logo.png" }
-
-export function printReceipt(cart: CartItem[], businessInfo: BusinessInfo) {
-  if (cart.length === 0) return;
-
-  // Prepare receipt text
-  let receipt = "";
-
-  // Business logo and name
-  if (businessInfo.logoUrl) {
-    receipt += `[LOGO: ${businessInfo.logoUrl}]\n`;
-  }
-  receipt += `*** ${businessInfo.name} ***\n\n`;
-
-  // Cart items
-  cart.forEach(item => {
-    receipt += `${item.name} x${item.quantity} = ₦${(item.price * item.quantity).toLocaleString()}\n`;
-  });
-
-  // Total
-  const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  receipt += `\nTOTAL: ₦${total.toLocaleString()}\n`;
-  receipt += "-----------------------\n";
-  receipt += "Thank you for your purchase!\n";
-
-  // In Electron, you can send this string to the main process for printing
-  // Example:
-  if (window.electron) {
-    window.electron.print(receipt);
-  } else {
-    console.log("Print output (Electron not ready):\n", receipt);
-  }
+export const businessInfo: BusinessInfo = { 
+    name: "My Business", 
+    logoUrl: "logo.png" 
 }
 
 

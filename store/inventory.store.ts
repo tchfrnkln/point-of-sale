@@ -1,5 +1,7 @@
 import { supabase } from '@/lib/supabase/client'
 import { create } from 'zustand'
+import { CartItem } from './pos.store'
+import { toast } from 'sonner'
 
 export type InventoryItem = {
   id: string
@@ -24,6 +26,7 @@ type InventoryStore = {
     value: InventoryItem[K]
   ) => void
   saveActiveItem: () => Promise<void>
+  reduceStock: (cart: CartItem[]) => void;
 }
 
 const emptyItem: InventoryItem = {
@@ -152,4 +155,45 @@ export const useInventoryStore = create<InventoryStore>((set, get) => ({
       activeItem: null,
     })
   },
+
+  reduceStock: async (cart: CartItem[]) => {
+    set({
+      inventory: get().inventory.map(item => {
+        const sold = cart.find(c => c.productId === item.id);
+        if (sold) {
+          return { ...item, stockAmount: Math.max(0, item.stockAmount - sold.quantity) };
+        }
+        return item;
+      })
+    });
+
+    // Update Supabase using the current quantity in DB
+    for (const soldItem of cart) {
+      const { data: currentData, error: fetchError } = await supabase
+        .from("inventory")
+        .select("stock_amount")
+        .eq("id", soldItem.productId)
+        .single();
+
+      if (fetchError || !currentData) {
+        toast.error("Failed to fetch current stock for product " + soldItem.name);
+        continue;
+      }
+
+      const newStock = Math.max(0, currentData.stock_amount - soldItem.quantity);
+
+      const { data, error } = await supabase
+        .from("inventory")
+        .update({ stock_amount: newStock })
+        .eq("id", soldItem.productId);
+
+      if (error) {
+        toast.error("Failed to update inventory for " + soldItem.name);
+      } else {
+        console.log("Updated inventory in Supabase:", data);
+      }
+    }
+  }
+
+
 }))
