@@ -1,52 +1,77 @@
-"use client"
+'use client'
 
 import {
   Table,
   TableBody,
   TableCaption,
   TableCell,
-//   TableFooter,
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
-import { TableDrawer } from "./Drawer"
-import { useInventoryStore } from "@/store/inventory.store";
-
+} from '@/components/ui/table'
+import { Input } from '@/components/ui/input'
+import { useInventoryStore } from '@/store/inventory.store'
+import { TableDrawer } from './Drawer'
 
 export function InventoryTable() {
-    const {inventory} = useInventoryStore();
-  
+  const { inventory, searchQuery, setSearchQuery } = useInventoryStore()
+
+  const filteredInventory = inventory.filter(item => {
+    const q = searchQuery.toLowerCase()
     return (
-    <Table>
-      <TableCaption className="font-bold">Over {inventory.length-1}+ Total Products inventory.</TableCaption>
-      <TableHeader>
-        <TableRow>
-          <TableHead className="w-[50px]">No.</TableHead>
-          <TableHead>Product Name</TableHead>
-          <TableHead>Stock Left</TableHead>
-          <TableHead>Cost (Naira)</TableHead>
-          <TableHead>Expiry Dates</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {inventory.map((invoice, index) => (
-          <TableRow key={invoice.id}>
-            <TableCell className="font-medium">{index+1}.</TableCell>
-            <TableCell>{invoice.productName}</TableCell>
-            <TableCell>{invoice.stockAmount}</TableCell>
-            <TableCell>{Number(invoice.cost).toLocaleString()}</TableCell>
-            <TableCell>{invoice.expiryDate?.toLocaleDateString()}</TableCell>
-            <TableDrawer itemId={invoice.id} name="edit"/>
+      item.productName.toLowerCase().includes(q) ||
+      item.barcode.toLowerCase().includes(q)
+    )
+  })
+
+  return (
+    <div className="space-y-4">
+
+      {/* Search Field */}
+      <Input
+        placeholder="Search by product name or barcode..."
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        className="max-w-sm"
+      />
+
+      <Table>
+        <TableCaption className="font-bold">
+          {filteredInventory.length} product(s) found
+        </TableCaption>
+
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-[50px]">No.</TableHead>
+            <TableHead>Product Name</TableHead>
+            <TableHead>Stock Left</TableHead>
+            <TableHead>Cost (₦)</TableHead>
+            <TableHead>Expiry Date</TableHead>
+            <TableHead />
           </TableRow>
-        ))}
-      </TableBody>
-      {/* <TableFooter>
-        <TableRow>
-          <TableCell colSpan={4}>Total</TableCell>
-          <TableCell className="text-right">$2,500000</TableCell>
-        </TableRow>
-      </TableFooter> */}
-    </Table>
+        </TableHeader>
+
+        <TableBody>
+          {filteredInventory.map((item, index) => (
+            <TableRow key={item.id}>
+              <TableCell className="font-medium">
+                {index + 1}.
+              </TableCell>
+              <TableCell>{item.productName}</TableCell>
+              <TableCell>{item.stockAmount}</TableCell>
+              <TableCell>
+                {item.cost.toLocaleString()}
+              </TableCell>
+              <TableCell>
+                {item.expiryDate
+                  ? item.expiryDate.toLocaleDateString()
+                  : '—'}
+              </TableCell>
+              <TableDrawer itemId={item.id} name="edit" />
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
   )
 }

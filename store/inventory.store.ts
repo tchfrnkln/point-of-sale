@@ -12,7 +12,9 @@ export type InventoryItem = {
 type InventoryStore = {
   inventory: InventoryItem[]
   activeItem: InventoryItem | null
+  searchQuery: string
 
+  setSearchQuery: (query: string) => void
   setActiveItem: (itemId: string | 'createNew') => void
   updateActiveItem: <K extends keyof InventoryItem>(
     field: K,
@@ -52,6 +54,9 @@ export const useInventoryStore = create<InventoryStore>((set, get) => ({
   ],
 
   activeItem: null,
+  searchQuery: '',
+
+  setSearchQuery: (query) => set({ searchQuery: query }),
 
   setActiveItem: (itemId) => {
     if (itemId === 'createNew') {
@@ -77,7 +82,6 @@ export const useInventoryStore = create<InventoryStore>((set, get) => ({
     const { activeItem, inventory } = get()
     if (!activeItem) return
 
-    // CREATE
     if (!activeItem.id) {
       set({
         inventory: [
@@ -89,7 +93,6 @@ export const useInventoryStore = create<InventoryStore>((set, get) => ({
       return
     }
 
-    // UPDATE
     set({
       inventory: inventory.map(item =>
         item.id === activeItem.id ? activeItem : item
