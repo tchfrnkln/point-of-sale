@@ -1,0 +1,141 @@
+"use client";
+
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow
+} from "@/components/ui/table";
+import { Separator } from "@/components/ui/separator";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { PaymentType, usePOSStore } from "@/store/pos.store";
+import { toast } from "sonner";
+import { findProduct } from "@/lib/inventory/inventory";
+
+export default function POSPage() {
+
+  const {
+    cart, addItem, updateQty, removeItem,
+    suspendSale, resumeSale, clearSale,
+    payments, addPayment, suspendedSales
+  } = usePOSStore();
+
+  const total = cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
+  const paid = payments.reduce((sum, p) => sum + p.amount, 0);
+  const balance = total - paid;
+
+  return (
+    <div className="min-h-screen w-full p-4">
+      <h1 className="text-4xl font-bold py-6">Point Of Sale</h1>
+
+      <div className="grid grid-cols-3 gap-4">
+        {/* LEFT — SCAN & CART */}
+        <div className="col-span-2 space-y-4">
+          <Input
+            autoFocus
+            placeholder="Scan barcode or enter product name"
+            onKeyDown={async e => {
+              if (e.key !== "Enter") return;
+              const query = e.currentTarget.value.trim();
+              if (!query) return;
+
+              const product = await findProduct(query);
+              if (!product) return toast.error("Product not found");
+              if (product.stockAmount <= 0) return toast.error("Out of stock");
+
+              addItem({
+                id: crypto.randomUUID(),
+                productId: product.id,
+                name: product.product_name,
+                price: product.cost,
+                quantity: 1,
+                stockLeft: product.stock_amount
+              });
+
+                if(e.currentTarget?.value){
+                    e.currentTarget.value = ""
+                }
+            }}
+          />
+
+          {/* CART TABLE */}
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Item</TableHead>
+                <TableHead>Price</TableHead>
+                <TableHead>Qty</TableHead>
+                <TableHead>Total</TableHead>
+                <TableHead></TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {cart.map(item => (
+                <TableRow key={item.id}>
+                  <TableCell>{item.name}</TableCell>
+                  <TableCell>₦{item.price.toLocaleString()}</TableCell>
+                  <TableCell>
+                    <Input
+                      type="number"
+                      className="w-24"
+                      value={item.quantity}
+                      onChange={e =>
+                        updateQty(item.id, Number(e.target.value))
+                      }
+                    />
+                  </TableCell>
+                  <TableCell>₦{(item.price * item.quantity).toLocaleString()}</TableCell>
+                  <TableCell>
+                    <Button variant="destructive" size="sm" onClick={() => removeItem(item.id)}>Remove</Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+
+        {/* RIGHT — SUMMARY & PAYMENTS */}
+        <div className="space-y-4">
+          <h2 className="font-bold text-lg">Checkout</h2>
+          <Separator />
+
+          <div className="flex justify-between text-lg font-semibold">
+            <span>Total</span>
+            <span>₦{total.toLocaleString()}</span>
+          </div>
+
+          <div className="flex justify-between text-lg font-semibold">
+            <span>Paid</span>
+            <span>₦{paid.toLocaleString()}</span>
+          </div>
+
+          <div className="flex justify-between text-lg font-semibold">
+            <span>Balance</span>
+            <span>₦{balance.toLocaleString()}</span>
+          </div>
+
+          <Separator />
+
+          <Select onValueChange={(value: PaymentType) => addPayment({ type: value, amount: balance })}>
+            <SelectTrigger>
+              <SelectValue placeholder="Select payment method" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="CASH">Cash</SelectItem>
+              <SelectItem value="TRANSFER">Transfer</SelectItem>
+              <SelectItem value="CARD">Card</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Separator />
+
+          <Button className="w-full" onClick={suspendSale}>Suspend Sale</Button>
+          {suspendedSales.length > 0 && suspendedSales.map((_, i) => (
+            <Button key={i} className="w-full" variant="outline" onClick={() => resumeSale(i)}>Resume Sale #{i + 1}</Button>
+          ))}
+
+          <Button className="w-full" variant="destructive" onClick={clearSale}>Cancel Sale</Button>
+        </div>
+      </div>
+    </div>
+  );
+}
