@@ -10,7 +10,6 @@ import {
 import { Input } from "@/components/ui/input"
 import { Button } from "../../ui/button"
 import { useAuthStore } from "@/store/auth.store";
-import AuthNavBar from "../../layout/AuthNav";
 
 export default function SignUp({name}:{name:string}) {
 
@@ -65,7 +64,6 @@ export default function SignUp({name}:{name:string}) {
                 Submit
             </Button>
         </FieldGroup>
-        <AuthNavBar active="register"/>
       </FieldSet>
     </div>
   )

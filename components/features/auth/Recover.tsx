@@ -10,7 +10,6 @@ import {
 import { Input } from "@/components/ui/input"
 import { Button } from "../../ui/button"
 import { useAuthStore } from "@/store/auth.store";
-import AuthNavBar from "../../layout/AuthNav";
 
 export default function RecoverUser({name}:{name:string}) {
 
@@ -56,7 +55,6 @@ export default function RecoverUser({name}:{name:string}) {
                 Submit
             </Button>
         </FieldGroup>
-        <AuthNavBar active="recover"/>
       </FieldSet>
     </div>
   )
