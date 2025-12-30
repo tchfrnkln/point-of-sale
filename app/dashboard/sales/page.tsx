@@ -13,7 +13,6 @@ import {
   TableRow
 } from "@/components/ui/table";
 import { Separator } from "@/components/ui/separator";
-import { Button } from "@/components/ui/button";
 import { useSalesAnalyticsStore } from "@/store/sales.store";
 import DailySalesBarChart from "@/components/features/dashboard/sales/DailyChart";
 import WeeklySalesLineChart from "@/components/features/dashboard/sales/WeeklyChart";
