@@ -10,8 +10,8 @@ const dashboardItems = [
   { title: "Top Selling Product", icon: TrendingUp, href: "/dashboard/sales", color: "bg-green-500" },
   { title: "Close to Expiration", icon: Calendar, href: "/dashboard/expiry", color: "bg-orange-500" },
   { title: "Create New User", icon: Users, href: "/auth/new", color: "bg-teal-500" },
-  { title: "Audits", icon: FileText, href: "/dashboard/audits", color: "bg-pink-500" },
-  { title: "Settings & Configs", icon: Settings, href: "/dashboard/settings", color: "bg-gray-700" },
+  { title: "Audits", icon: FileText, href: "/dashboard/audit", color: "bg-pink-500" },
+  // { title: "Settings & Configs", icon: Settings, href: "/dashboard/settings", color: "bg-gray-700" },
 ];
 
 export default function DashboardPage() {
