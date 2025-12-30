@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ArrowRight, Users, Box, TrendingUp, Calendar, Settings, FileText, CreditCard } from "lucide-react";
+import { ArrowRight, Users, Box, TrendingUp, Calendar, FileText, CreditCard } from "lucide-react";
 
 const dashboardItems = [
   { title: "Point of Sale", icon: CreditCard, href: "/dashboard/pos", color: "bg-purple-500" },
