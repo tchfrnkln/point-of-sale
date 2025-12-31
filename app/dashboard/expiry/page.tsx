@@ -20,6 +20,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useExpiryStore } from "@/store/expiry.store";
+import { UserInfo } from "@/components/features/dashboard/UserInfo";
 
 export default function ExpiredProductsPage() {
   const {
@@ -37,7 +38,7 @@ export default function ExpiredProductsPage() {
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Expired Products</h1>
+        <UserInfo name="Expired Products"/> 
         <p className="text-muted-foreground">
           Products past their expiry date (locked from sale)
         </p>

@@ -16,6 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useAuditLogStore } from "@/store/audit.store";
+import { UserInfo } from "@/components/features/dashboard/UserInfo";
 
 export default function AuditLogsPage() {
   const {
@@ -36,7 +37,7 @@ export default function AuditLogsPage() {
   return (
     <div className="p-6 space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">Audit Logs</h1>
+        <UserInfo name="Audit Logs"/>
         <p className="text-muted-foreground">
           Track all sales and generate daily financial summary
         </p>

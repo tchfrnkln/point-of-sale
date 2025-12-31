@@ -1,4 +1,6 @@
 import { login, signUp } from "@/lib/auth/auth"
+import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime"
+// import { NextRouter } from "next/router"
 // import { error } from "console"
 import { toast } from "sonner"
 import { create } from "zustand"
@@ -12,7 +14,7 @@ type AuthStore = {
   setUsername: (v: string) => void
   setPassword: (v: string) => void
   setRePassword: (v: string) => void
-  login: () => Promise<void>
+  login: (router?: AppRouterInstance) => Promise<void>
   signup: () => Promise<void>
   recover: () => Promise<void>
   error: string | null
@@ -33,7 +35,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
   setPassword: (v) => set({ password: v }),
   setRePassword: (v) => set({ repassword: v }),
 
-  login: async () => {
+  login: async (router?:AppRouterInstance) => {
     const { username, password } = get()
 
     if (!username || !password){
@@ -49,6 +51,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
       await login({ username, password });
       set({ loading: false, username: "", password: ""})
       toast.success("Login Successful!")
+      if(router) router.push("/dashboard")
     }catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : String(err)

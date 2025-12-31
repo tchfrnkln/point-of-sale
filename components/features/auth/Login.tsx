@@ -10,6 +10,8 @@ import {
 import { Input } from "@/components/ui/input"
 import { Button } from "../../ui/button"
 import { useAuthStore } from "@/store/auth.store";
+import { useRouter } from "next/navigation";
+// import { useRouter } from "next/router";
 
 export default function Login({name}:{name:string}) {
 
@@ -21,6 +23,8 @@ export default function Login({name}:{name:string}) {
     login,
     loading,
   } = useAuthStore()
+
+    const router = useRouter();
 
   return (
     <div className="w-full max-w-md">
@@ -49,7 +53,7 @@ export default function Login({name}:{name:string}) {
           </Field>
 
             <Button variant="outline" 
-                onClick={()=> login()}
+                onClick={()=> login(router)}
                 disabled={loading}
                 type="submit" >
                 Submit

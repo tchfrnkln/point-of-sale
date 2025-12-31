@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowRight, Users, Box, TrendingUp, Calendar, FileText, CreditCard } from "lucide-react";
+import { UserInfo } from "@/components/features/dashboard/UserInfo";
 
 const dashboardItems = [
   { title: "Point of Sale", icon: CreditCard, href: "/dashboard/pos", color: "bg-purple-500" },
@@ -17,7 +18,7 @@ const dashboardItems = [
 export default function DashboardPage() {
   return (
     <div className="p-6">
-      <h1 className="text-4xl font-bold mb-8">Dashboard</h1>
+      <UserInfo name="Dashboard"/>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {dashboardItems.map((item) => {

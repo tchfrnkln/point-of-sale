@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { findProduct } from "@/lib/inventory/inventory";
 import { useEffect, useRef } from "react";
 import { useInventoryStore } from "@/store/inventory.store";
+import { UserInfo } from "@/components/features/dashboard/UserInfo";
 
 export default function POSPage() {
 
@@ -76,7 +77,7 @@ export default function POSPage() {
 
   return (
     <div className="min-h-screen w-full p-4">
-      <h1 className="text-4xl font-bold py-6">Point Of Sale</h1>
+      <UserInfo name="Point Of Sale"/>
 
       <div className="grid grid-cols-3 gap-4">
         {/* LEFT — SCAN & CART */}

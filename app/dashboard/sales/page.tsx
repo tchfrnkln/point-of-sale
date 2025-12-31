@@ -19,6 +19,7 @@ import WeeklySalesLineChart from "@/components/features/dashboard/sales/WeeklyCh
 import StaffSalesPieChart from "@/components/features/dashboard/sales/StaffChart";
 import { ExportPopover } from "@/components/features/dashboard/sales/Exports/PopOver";
 import { handleExcelExport, handlePDFExport } from "@/lib/exports/handler";
+import { UserInfo } from "@/components/features/dashboard/UserInfo";
 
 
 export default function AdminSalesPage() {
@@ -33,7 +34,8 @@ export default function AdminSalesPage() {
 
   return (
     <div className="p-6 space-y-6">
-      <h1 className="text-2xl font-bold">Sales Dashboard</h1>
+      {/* <h1 className="text-2xl font-bold"></h1> */}
+      <UserInfo name="Sales Dashboard"/>
 
       {/* SUMMARY */}
       <div className="grid md:grid-cols-3 gap-4">
