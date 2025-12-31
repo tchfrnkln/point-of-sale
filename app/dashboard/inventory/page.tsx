@@ -15,8 +15,9 @@ export default function Page() {
 
   return (
     <div className="p-6"> 
-        <div className="w-full flex justify-between items-center">
+        <div className="w-full flex flex-col justify-between items-end ">
             <UserInfo name="Inventory"/> 
+
             <TableDrawer itemId="createNew" name="Add New Item"/> 
         </div> 
         <InventoryTable/> 

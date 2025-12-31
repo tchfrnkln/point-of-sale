@@ -2,10 +2,12 @@ import { create } from "zustand";
 import { supabase } from "@/lib/supabase/client";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 
+export type UserRole = "ADMIN" | "STAFF"
+
 export type UserSession = {
   userId: string;
   email: string;
-  role: string;
+  role: UserRole;
   username: string;
 };
 
@@ -50,7 +52,7 @@ export const useUserStore = create<UserStore>((set) => ({
         userId: user.id,
         email: user.email ?? "",
         username: profile.username,
-        role: profile.role
+        role: profile.role ?? "STAFF"
       }
     });
   },
