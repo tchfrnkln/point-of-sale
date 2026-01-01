@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { supabase } from "@/lib/supabase/client";
 
-/* ===================== TYPES (UNCHANGED) ===================== */
+/* ===================== TYPES ===================== */
 
 export type SalesSummary = {
   date: string;
@@ -34,13 +34,16 @@ export type SalesAnalyticsState = {
   topProducts: TopProduct[];
   staffPerformance: StaffPerformance[];
 
-  /* EXISTING FUNCTION — NOW BACKED BY DB */
-  seedMockData: () => Promise<void>;
+  fromDate: string;
+  toDate: string;
+
+  setDateRange: (from: string, to: string) => void;
+  fetchSales: () => Promise<void>;
 };
 
 /* ===================== STORE ===================== */
 
-export const useSalesAnalyticsStore = create<SalesAnalyticsState>((set) => ({
+export const useSalesAnalyticsStore = create<SalesAnalyticsState>((set, get) => ({
   daily: [],
   weekly: [],
   monthly: [],
@@ -51,28 +54,35 @@ export const useSalesAnalyticsStore = create<SalesAnalyticsState>((set) => ({
   topProducts: [],
   staffPerformance: [],
 
-  /* ==========================================================
-     seedMockData() KEPT — NOW FETCHES FROM audit_logs TABLE
-     ========================================================== */
-  seedMockData: async () => {
-    const { data, error } = await supabase
+  fromDate: "",
+  toDate: "",
+
+  setDateRange: (from, to) => set({ fromDate: from, toDate: to }),
+
+  fetchSales: async () => {
+    const { fromDate, toDate } = get();
+
+    let query = supabase
       .from("audit_logs")
       .select("product_name, quantity, total_price, sold_by, created_at");
 
+    if (fromDate) query = query.gte("created_at", fromDate);
+    if (toDate) query = query.lte("created_at", `${toDate}T23:59:59`);
+
+    const { data, error } = await query;
+
     if (error || !data) {
-      console.error("Failed to fetch sales analytics", error);
+      console.error("Failed to fetch sales", error);
       return;
     }
 
     const dailyMap = new Map<string, SalesSummary>();
     const weeklyMap = new Map<string, SalesSummary>();
     const monthlyMap = new Map<string, SalesSummary>();
-
     const productMap = new Map<string, TopProduct>();
     const staffMap = new Map<string, StaffPerformance>();
 
     let totalSales = 0;
-    const totalTransactions = data.length;
 
     for (const row of data) {
       const amount = Number(row.total_price);
@@ -83,37 +93,21 @@ export const useSalesAnalyticsStore = create<SalesAnalyticsState>((set) => ({
       const weekKey = `Week ${Math.ceil(date.getDate() / 7)}`;
       const monthKey = date.toLocaleString("default", { month: "short" });
 
-      /* ---------- DAILY ---------- */
-      const daily = dailyMap.get(dayKey) ?? {
-        date: dayKey,
-        totalAmount: 0,
-        transactions: 0
+      const push = (map: Map<string, SalesSummary>, key: string) => {
+        const entry = map.get(key) ?? {
+          date: key,
+          totalAmount: 0,
+          transactions: 0
+        };
+        entry.totalAmount += amount;
+        entry.transactions += 1;
+        map.set(key, entry);
       };
-      daily.totalAmount += amount;
-      daily.transactions += 1;
-      dailyMap.set(dayKey, daily);
 
-      /* ---------- WEEKLY ---------- */
-      const weekly = weeklyMap.get(weekKey) ?? {
-        date: weekKey,
-        totalAmount: 0,
-        transactions: 0
-      };
-      weekly.totalAmount += amount;
-      weekly.transactions += 1;
-      weeklyMap.set(weekKey, weekly);
+      push(dailyMap, dayKey);
+      push(weeklyMap, weekKey);
+      push(monthlyMap, monthKey);
 
-      /* ---------- MONTHLY ---------- */
-      const monthly = monthlyMap.get(monthKey) ?? {
-        date: monthKey,
-        totalAmount: 0,
-        transactions: 0
-      };
-      monthly.totalAmount += amount;
-      monthly.transactions += 1;
-      monthlyMap.set(monthKey, monthly);
-
-      /* ---------- TOP PRODUCTS ---------- */
       const product = productMap.get(row.product_name) ?? {
         productId: row.product_name,
         name: row.product_name,
@@ -124,7 +118,6 @@ export const useSalesAnalyticsStore = create<SalesAnalyticsState>((set) => ({
       product.revenue += amount;
       productMap.set(row.product_name, product);
 
-      /* ---------- STAFF PERFORMANCE ---------- */
       const staff = staffMap.get(row.sold_by) ?? {
         staffId: row.sold_by,
         staffName: row.sold_by,
@@ -140,14 +133,11 @@ export const useSalesAnalyticsStore = create<SalesAnalyticsState>((set) => ({
       daily: Array.from(dailyMap.values()),
       weekly: Array.from(weeklyMap.values()),
       monthly: Array.from(monthlyMap.values()),
-
       totalSales,
-      totalTransactions,
-
+      totalTransactions: data.length,
       topProducts: Array.from(productMap.values()).sort(
         (a, b) => b.revenue - a.revenue
       ),
-
       staffPerformance: Array.from(staffMap.values()).sort(
         (a, b) => b.totalSales - a.totalSales
       )

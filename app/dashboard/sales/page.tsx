@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect } from "react";
-
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -20,36 +19,74 @@ import StaffSalesPieChart from "@/components/features/dashboard/sales/StaffChart
 import { ExportPopover } from "@/components/features/dashboard/sales/Exports/PopOver";
 import { handleExcelExport, handlePDFExport } from "@/lib/exports/handler";
 import { UserInfo } from "@/components/features/dashboard/UserInfo";
-
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 export default function AdminSalesPage() {
-    const store = useSalesAnalyticsStore();
+  const {
+    daily,
+    weekly,
+    monthly,
+    totalSales,
+    totalTransactions,
+    topProducts,
+    staffPerformance,
+    fromDate,
+    toDate,
+    setDateRange,
+    fetchSales
+  } = useSalesAnalyticsStore();
 
-    const seedMockData = useSalesAnalyticsStore(state => state.seedMockData);
-
-    useEffect(() => {
-        seedMockData();
-    }, [seedMockData]);
-
+  useEffect(() => {
+    fetchSales();
+  }, [fetchSales]);
 
   return (
     <div className="p-6 space-y-6">
-      {/* <h1 className="text-2xl font-bold"></h1> */}
-      <UserInfo name="Sales Dashboard"/>
+      <UserInfo name="Sales Dashboard" />
+
+      {/* DATE RANGE FILTER */}
+      <Card>
+        <CardContent className="p-4 flex flex-wrap gap-4 items-end">
+          <div>
+            <label className="text-sm">From</label>
+            <Input
+              type="date"
+              value={fromDate}
+              onChange={(e) => setDateRange(e.target.value, toDate)}
+            />
+          </div>
+
+          <div>
+            <label className="text-sm">To</label>
+            <Input
+              type="date"
+              value={toDate}
+              onChange={(e) => setDateRange(fromDate, e.target.value)}
+            />
+          </div>
+
+          <Button onClick={fetchSales}>Apply</Button>
+        </CardContent>
+      </Card>
 
       {/* SUMMARY */}
       <div className="grid md:grid-cols-3 gap-4">
         <Card>
           <CardContent className="p-4">
             <p>Total Sales</p>
-            <p className="text-2xl font-bold">₦{store.totalSales.toLocaleString()}</p>
+            <p className="text-2xl font-bold">
+              ₦{totalSales.toLocaleString()}
+            </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardContent className="p-4">
             <p>Transactions</p>
-            <p className="text-2xl font-bold">{store.totalTransactions.toLocaleString()}</p>
+            <p className="text-2xl font-bold">
+              {totalTransactions.toLocaleString()}
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -63,17 +100,17 @@ export default function AdminSalesPage() {
         </TabsList>
 
         <TabsContent value="daily">
-          <DailySalesBarChart data={store.daily} />
-          <SalesTable data={store.daily} />
+          <DailySalesBarChart data={daily} />
+          <SalesTable data={daily} />
         </TabsContent>
 
         <TabsContent value="weekly">
-          <WeeklySalesLineChart data={store.weekly} />
-          <SalesTable data={store.weekly} />
+          <WeeklySalesLineChart data={weekly} />
+          <SalesTable data={weekly} />
         </TabsContent>
 
         <TabsContent value="monthly">
-          <SalesTable data={store.monthly} />
+          <SalesTable data={monthly} />
         </TabsContent>
       </Tabs>
 
@@ -90,7 +127,7 @@ export default function AdminSalesPage() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {store.topProducts.map(p => (
+          {topProducts.map((p) => (
             <TableRow key={p.productId}>
               <TableCell>{p.name}</TableCell>
               <TableCell>{p.quantitySold}</TableCell>
@@ -104,15 +141,15 @@ export default function AdminSalesPage() {
 
       {/* STAFF */}
       <h2 className="font-semibold">Staff Performance</h2>
-      <StaffSalesPieChart data={store.staffPerformance} />
+      <StaffSalesPieChart data={staffPerformance} />
 
       <Table>
         <TableBody>
-          {store.staffPerformance.map(s => (
+          {staffPerformance.map((s) => (
             <TableRow key={s.staffId}>
               <TableCell>{s.staffName}</TableCell>
               <TableCell>₦{s.totalSales.toLocaleString()}</TableCell>
-              <TableCell>{s.transactions.toLocaleString()}</TableCell>
+              <TableCell>{s.transactions}</TableCell>
             </TableRow>
           ))}
         </TableBody>
@@ -120,19 +157,18 @@ export default function AdminSalesPage() {
 
       <Separator />
 
+      {/* EXPORT */}
+      <div className="flex gap-2">
+        <ExportPopover
+          label="Export Excel"
+          onConfirm={(range) => handleExcelExport(range, useSalesAnalyticsStore.getState())}
+        />
 
-        <div className="flex gap-2">
-            <ExportPopover
-                label="Export Excel"
-                onConfirm={(range) => handleExcelExport(range, store)}
-            />
-
-            <ExportPopover
-                label="Export PDF"
-                onConfirm={(range) => handlePDFExport(range, store)}
-            />
-        </div>
-
+        <ExportPopover
+          label="Export PDF"
+          onConfirm={(range) => handlePDFExport(range, useSalesAnalyticsStore.getState())}
+        />
+      </div>
     </div>
   );
 }
@@ -153,11 +189,11 @@ function SalesTable({
         </TableRow>
       </TableHeader>
       <TableBody>
-        {data.map(d => (
+        {data.map((d) => (
           <TableRow key={d.date}>
             <TableCell>{d.date}</TableCell>
             <TableCell>₦{d.totalAmount.toLocaleString()}</TableCell>
-            <TableCell>{d.transactions.toLocaleString()}</TableCell>
+            <TableCell>{d.transactions}</TableCell>
           </TableRow>
         ))}
       </TableBody>
