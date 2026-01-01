@@ -1,9 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-// import { useAuditLogStore } from "@/store/audit-log-store";
+import { useAuditLogStore } from "@/store/audit.store";
+import { UserInfo } from "@/components/features/dashboard/UserInfo";
 
 import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 import {
   Table,
   TableHeader,
@@ -12,55 +15,105 @@ import {
   TableBody,
   TableCell
 } from "@/components/ui/table";
+import {
+  Select,
+  SelectTrigger,
+  SelectContent,
+  SelectItem,
+  SelectValue
+} from "@/components/ui/select";
 
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { useAuditLogStore } from "@/store/audit.store";
-import { UserInfo } from "@/components/features/dashboard/UserInfo";
+import type { PaymentType } from "@/store/audit.store";
 
 export default function AuditLogsPage() {
   const {
     filteredLogs,
-    filterByUser,
-    resetFilter,
-    seedMockData
+    fetchLogs,
+    setUsernameFilter,
+    setPaymentFilter,
+    setDateRange,
+    resetFilters
   } = useAuditLogStore();
 
-  const [usernameFilter, setUsernameFilter] = useState("");
+  const [username, setUsername] = useState("");
+  const [paymentType, setPaymentType] = useState<PaymentType | "">("");
+  const [fromDate, setFromDate] = useState("");
+  const [toDate, setToDate] = useState("");
 
   useEffect(() => {
-    seedMockData();
-  }, [seedMockData]);
+    fetchLogs();
+  }, [fetchLogs]);
 
-  const totalSales = filteredLogs.reduce((sum, l) => sum + l.totalPrice, 0);
+  const totalSales = filteredLogs.reduce(
+    (sum, log) => sum + log.totalPrice,
+    0
+  );
 
   return (
     <div className="p-6 space-y-6">
-      <div>
-        <UserInfo name="Audit Logs"/>
-        <p className="text-muted-foreground">
-          Track all sales and generate daily financial summary
-        </p>
-      </div>
+      <UserInfo name="Audit Logs" />
 
-      {/* FILTER */}
+      {/* FILTERS */}
       <Card>
-        <CardContent className="flex items-center space-x-2">
+        <CardContent className="grid grid-cols-1 md:grid-cols-5 gap-3">
           <Input
-            placeholder="Filter by username"
-            value={usernameFilter}
-            onChange={e => setUsernameFilter(e.target.value)}
+            placeholder="Filter by staff name"
+            value={username}
+            onChange={e => {
+              setUsername(e.target.value);
+              setUsernameFilter(e.target.value || undefined);
+            }}
           />
-          <Button
-            onClick={() => filterByUser(usernameFilter)}
+
+          <Select
+            value={paymentType}
+            onValueChange={value => {
+              setPaymentType(value as PaymentType);
+              setPaymentFilter(value as PaymentType);
+            }}
           >
-            Filter
-          </Button>
+            <SelectTrigger>
+              <SelectValue placeholder="Payment type" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="cash">Cash</SelectItem>
+              <SelectItem value="card">Card</SelectItem>
+              <SelectItem value="transfer">Transfer</SelectItem>
+            </SelectContent>
+          </Select>
+
+          <Input
+            type="date"
+            value={fromDate}
+            onChange={e => {
+              setFromDate(e.target.value);
+              setDateRange({
+                from: e.target.value || undefined,
+                to: toDate || undefined
+              });
+            }}
+          />
+
+          <Input
+            type="date"
+            value={toDate}
+            onChange={e => {
+              setToDate(e.target.value);
+              setDateRange({
+                from: fromDate || undefined,
+                to: e.target.value || undefined
+              });
+            }}
+          />
+
           <Button
             variant="secondary"
             onClick={() => {
-              resetFilter();
-              setUsernameFilter("");
+              setUsername("");
+              setPaymentType("");
+              setFromDate("");
+              setToDate("");
+              resetFilters();
             }}
           >
             Reset
@@ -70,13 +123,13 @@ export default function AuditLogsPage() {
 
       {/* SUMMARY */}
       <Card>
-        <CardContent className="flex justify-between">
-          <p className="font-semibold">Total Transactions: {filteredLogs.length}</p>
-          <p className="font-semibold">Total Sales: ₦{totalSales}</p>
+        <CardContent className="flex justify-between font-semibold">
+          <span>Total Transactions: {filteredLogs.length}</span>
+          <span>Total Sales: ₦{totalSales.toLocaleString()}</span>
         </CardContent>
       </Card>
 
-      {/* LOG TABLE */}
+      {/* TABLE */}
       <Card>
         <CardContent>
           <Table>
@@ -84,10 +137,11 @@ export default function AuditLogsPage() {
               <TableRow>
                 <TableHead>Product</TableHead>
                 <TableHead>Qty</TableHead>
-                <TableHead>Price/Unit</TableHead>
+                <TableHead>Unit Price</TableHead>
                 <TableHead>Total</TableHead>
+                <TableHead>Payment</TableHead>
                 <TableHead>Sold By</TableHead>
-                <TableHead>Timestamp</TableHead>
+                <TableHead>Date</TableHead>
               </TableRow>
             </TableHeader>
 
@@ -98,10 +152,26 @@ export default function AuditLogsPage() {
                   <TableCell>{log.quantity}</TableCell>
                   <TableCell>₦{log.pricePerUnit}</TableCell>
                   <TableCell>₦{log.totalPrice}</TableCell>
+                  <TableCell className="capitalize">
+                    {log.paymentType}
+                  </TableCell>
                   <TableCell>{log.soldBy}</TableCell>
-                  <TableCell>{new Date(log.timestamp).toLocaleString()}</TableCell>
+                  <TableCell>
+                    {new Date(log.timestamp).toLocaleString()}
+                  </TableCell>
                 </TableRow>
               ))}
+
+              {filteredLogs.length === 0 && (
+                <TableRow>
+                  <TableCell
+                    colSpan={7}
+                    className="text-center text-muted-foreground"
+                  >
+                    No records found
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
         </CardContent>

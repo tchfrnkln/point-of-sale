@@ -1,4 +1,7 @@
 import { create } from "zustand";
+import { supabase } from "@/lib/supabase/client";
+
+export type PaymentType = "cash" | "card" | "transfer";
 
 export type SaleLog = {
   id: string;
@@ -7,62 +10,129 @@ export type SaleLog = {
   pricePerUnit: number;
   totalPrice: number;
   soldBy: string;
+  paymentType: PaymentType;
   timestamp: string;
+};
+
+type DateRange = {
+  from?: string;
+  to?: string;
 };
 
 type AuditLogStore = {
   logs: SaleLog[];
   filteredLogs: SaleLog[];
-  filterByUser: (username: string) => void;
-  resetFilter: () => void;
-  seedMockData: () => void;
+
+  usernameFilter?: string;
+  paymentFilter?: PaymentType;
+  dateRange?: DateRange;
+
+  fetchLogs: () => Promise<void>;
+  addLog: (log: Omit<SaleLog, "id" | "timestamp">) => Promise<void>;
+
+  setUsernameFilter: (username?: string) => void;
+  setPaymentFilter: (type?: PaymentType) => void;
+  setDateRange: (range?: DateRange) => void;
+
+  applyFilters: () => void;
+  resetFilters: () => void;
 };
 
 export const useAuditLogStore = create<AuditLogStore>((set, get) => ({
   logs: [],
   filteredLogs: [],
 
-  filterByUser: (username: string) => {
-    const logs = get().logs;
-    set({ filteredLogs: logs.filter(log => log.soldBy.toLowerCase() === username.toLowerCase()) });
+  fetchLogs: async () => {
+    const { data, error } = await supabase
+      .from("audit_logs")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Failed to fetch audit logs", error);
+      return;
+    }
+
+    const mapped: SaleLog[] = data.map(row => ({
+      id: row.id,
+      productName: row.product_name,
+      quantity: row.quantity,
+      pricePerUnit: Number(row.price_per_unit),
+      totalPrice: Number(row.total_price),
+      soldBy: row.sold_by,
+      paymentType: row.payment_type,
+      timestamp: row.created_at
+    }));
+
+    set({ logs: mapped, filteredLogs: mapped });
   },
 
-  resetFilter: () => {
-    const logs = get().logs;
-    set({ filteredLogs: logs });
+  addLog: async log => {
+    const { error } = await supabase.from("audit_logs").insert({
+      product_name: log.productName,
+      quantity: log.quantity,
+      price_per_unit: log.pricePerUnit,
+      total_price: log.totalPrice,
+      sold_by: log.soldBy,
+      payment_type: log.paymentType
+    });
+
+    if (!error) {
+      await get().fetchLogs();
+    }
   },
 
-  seedMockData: () => {
-    const data: SaleLog[] = [
-      {
-        id: "1",
-        productName: "Milk",
-        quantity: 2,
-        pricePerUnit: 100,
-        totalPrice: 200,
-        soldBy: "Alice",
-        timestamp: "2025-12-30T07:15:00"
-      },
-      {
-        id: "2",
-        productName: "Bread",
-        quantity: 3,
-        pricePerUnit: 50,
-        totalPrice: 150,
-        soldBy: "Bob",
-        timestamp: "2025-12-30T08:45:00"
-      },
-      {
-        id: "3",
-        productName: "Eggs",
-        quantity: 12,
-        pricePerUnit: 20,
-        totalPrice: 240,
-        soldBy: "Alice",
-        timestamp: "2025-12-30T09:30:00"
-      }
-    ];
+  setUsernameFilter: username => {
+    set({ usernameFilter: username });
+    get().applyFilters();
+  },
 
-    set({ logs: data, filteredLogs: data });
+  setPaymentFilter: type => {
+    set({ paymentFilter: type });
+    get().applyFilters();
+  },
+
+  setDateRange: range => {
+    set({ dateRange: range });
+    get().applyFilters();
+  },
+
+  applyFilters: () => {
+    const { logs, usernameFilter, paymentFilter, dateRange } = get();
+
+    let result = [...logs];
+
+    if (usernameFilter) {
+      result = result.filter(l =>
+        l.soldBy.toLowerCase().includes(usernameFilter.toLowerCase())
+      );
+    }
+
+    if (paymentFilter) {
+      result = result.filter(l => l.paymentType === paymentFilter);
+    }
+
+    if (dateRange?.from) {
+      result = result.filter(
+        l => new Date(l.timestamp) >= new Date(dateRange.from!)
+      );
+    }
+
+    if (dateRange?.to) {
+      result = result.filter(
+        l => new Date(l.timestamp) <= new Date(dateRange.to!)
+      );
+    }
+
+    set({ filteredLogs: result });
+  },
+
+  resetFilters: () => {
+    set({
+      usernameFilter: undefined,
+      paymentFilter: undefined,
+      dateRange: undefined,
+      filteredLogs: get().logs
+    });
   }
 }));
