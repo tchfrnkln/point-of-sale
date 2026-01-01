@@ -2,16 +2,30 @@
   "name": "point-of-sale",
   "version": "0.1.0",
   "private": true,
+  "author": {
+    "name": "Azuony Tochukwu Franklin",
+    "email": "franktochi156@gmail.com",
+    "url": "https://github.com/tchfrnkln"
+  },
+  "description": "Inventory and Stock Management for Physical Stores and Businesses",
   "main": "electron/dist/main.js",
+
+
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build:web": "next build",
     "start": "next start",
-    "lint": "eslint",
+
     "electron:build": "tsc -p electron",
     "electron:start": "wait-on http://localhost:3000 && electron .",
-    "desktop": "concurrently \"pnpm dev\" \"pnpm electron:build --watch\" \"pnpm electron:start\""
+    "desktop": "concurrently \"pnpm dev\" \"pnpm electron:build --watch\" \"pnpm electron:start\"",
+
+    "build:electron": "tsc -p electron",
+    "build:desktop": "pnpm build:web && pnpm build:electron && electron-builder",
+
+    "lint": "eslint"
   },
+
   "dependencies": {
     "@radix-ui/react-context-menu": "^2.2.16",
     "@radix-ui/react-dialog": "^1.1.15",
@@ -47,6 +61,7 @@
     "xlsx": "^0.18.5",
     "zustand": "^5.0.9"
   },
+
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/electron": "^1.6.12",
@@ -65,5 +80,26 @@
     "tw-animate-css": "^1.4.0",
     "typescript": "^5.9.3",
     "wait-on": "^9.0.3"
+  },
+
+  "build": {
+    "appId": "com.smartpointofsale.pos",
+    "productName": "Smart POS Desktop",
+    "asar": true,
+
+    "directories": {
+      "output": "release"
+    },
+
+    "files": [
+      "dist-electron/**/*",
+      ".next/**/*",
+      "public/**/*",
+      "package.json"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "public/icon.ico"
+    }
   }
 }
