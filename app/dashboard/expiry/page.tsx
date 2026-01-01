@@ -1,13 +1,8 @@
 "use client";
 
 import { useEffect } from "react";
-// import { useExpiryStore } from "@/store/expiry-store";
 
-import {
-  Card,
-  CardContent
-} from "@/components/ui/card";
-
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -16,7 +11,6 @@ import {
   TableHeader,
   TableRow
 } from "@/components/ui/table";
-
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useExpiryStore } from "@/store/expiry.store";
@@ -25,20 +19,18 @@ import { UserInfo } from "@/components/features/dashboard/UserInfo";
 export default function ExpiredProductsPage() {
   const {
     expiredProducts,
-    seedMockData,
-    recalculateExpiry,
+    fetchInventory,
     deleteExpiredProduct
   } = useExpiryStore();
 
   useEffect(() => {
-    seedMockData();
-    recalculateExpiry();
-  }, [seedMockData, recalculateExpiry]);
+    fetchInventory();
+  }, [fetchInventory]);
 
   return (
     <div className="p-6 space-y-6">
       <div>
-        <UserInfo name="Expired Products"/> 
+        <UserInfo name="Expired Products" />
         <p className="text-muted-foreground">
           Products past their expiry date (locked from sale)
         </p>
@@ -63,7 +55,7 @@ export default function ExpiredProductsPage() {
               </TableHeader>
 
               <TableBody>
-                {expiredProducts.map(p => (
+                {expiredProducts.map((p) => (
                   <TableRow key={p.id}>
                     <TableCell>{p.name}</TableCell>
                     <TableCell>{p.expiryDate}</TableCell>
