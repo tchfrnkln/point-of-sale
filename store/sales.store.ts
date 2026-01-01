@@ -1,4 +1,7 @@
 import { create } from "zustand";
+import { supabase } from "@/lib/supabase/client";
+
+/* ===================== TYPES (UNCHANGED) ===================== */
 
 export type SalesSummary = {
   date: string;
@@ -31,69 +34,123 @@ export type SalesAnalyticsState = {
   topProducts: TopProduct[];
   staffPerformance: StaffPerformance[];
 
-  seedMockData: () => void;
+  /* EXISTING FUNCTION — NOW BACKED BY DB */
+  seedMockData: () => Promise<void>;
 };
 
-export const useSalesAnalyticsStore = create<SalesAnalyticsState>(set => ({
+/* ===================== STORE ===================== */
+
+export const useSalesAnalyticsStore = create<SalesAnalyticsState>((set) => ({
   daily: [],
   weekly: [],
   monthly: [],
+
   totalSales: 0,
   totalTransactions: 0,
+
   topProducts: [],
   staffPerformance: [],
 
-  seedMockData: () =>
+  /* ==========================================================
+     seedMockData() KEPT — NOW FETCHES FROM audit_logs TABLE
+     ========================================================== */
+  seedMockData: async () => {
+    const { data, error } = await supabase
+      .from("audit_logs")
+      .select("product_name, quantity, total_price, sold_by, created_at");
+
+    if (error || !data) {
+      console.error("Failed to fetch sales analytics", error);
+      return;
+    }
+
+    const dailyMap = new Map<string, SalesSummary>();
+    const weeklyMap = new Map<string, SalesSummary>();
+    const monthlyMap = new Map<string, SalesSummary>();
+
+    const productMap = new Map<string, TopProduct>();
+    const staffMap = new Map<string, StaffPerformance>();
+
+    let totalSales = 0;
+    const totalTransactions = data.length;
+
+    for (const row of data) {
+      const amount = Number(row.total_price);
+      totalSales += amount;
+
+      const date = new Date(row.created_at);
+      const dayKey = date.toISOString().split("T")[0];
+      const weekKey = `Week ${Math.ceil(date.getDate() / 7)}`;
+      const monthKey = date.toLocaleString("default", { month: "short" });
+
+      /* ---------- DAILY ---------- */
+      const daily = dailyMap.get(dayKey) ?? {
+        date: dayKey,
+        totalAmount: 0,
+        transactions: 0
+      };
+      daily.totalAmount += amount;
+      daily.transactions += 1;
+      dailyMap.set(dayKey, daily);
+
+      /* ---------- WEEKLY ---------- */
+      const weekly = weeklyMap.get(weekKey) ?? {
+        date: weekKey,
+        totalAmount: 0,
+        transactions: 0
+      };
+      weekly.totalAmount += amount;
+      weekly.transactions += 1;
+      weeklyMap.set(weekKey, weekly);
+
+      /* ---------- MONTHLY ---------- */
+      const monthly = monthlyMap.get(monthKey) ?? {
+        date: monthKey,
+        totalAmount: 0,
+        transactions: 0
+      };
+      monthly.totalAmount += amount;
+      monthly.transactions += 1;
+      monthlyMap.set(monthKey, monthly);
+
+      /* ---------- TOP PRODUCTS ---------- */
+      const product = productMap.get(row.product_name) ?? {
+        productId: row.product_name,
+        name: row.product_name,
+        quantitySold: 0,
+        revenue: 0
+      };
+      product.quantitySold += row.quantity;
+      product.revenue += amount;
+      productMap.set(row.product_name, product);
+
+      /* ---------- STAFF PERFORMANCE ---------- */
+      const staff = staffMap.get(row.sold_by) ?? {
+        staffId: row.sold_by,
+        staffName: row.sold_by,
+        totalSales: 0,
+        transactions: 0
+      };
+      staff.totalSales += amount;
+      staff.transactions += 1;
+      staffMap.set(row.sold_by, staff);
+    }
+
     set({
-      daily: [
-        { date: "Mon", totalAmount: 45000, transactions: 12 },
-        { date: "Tue", totalAmount: 78000, transactions: 18 },
-        { date: "Wed", totalAmount: 32000, transactions: 9 },
-        { date: "Thu", totalAmount: 91000, transactions: 21 },
-        { date: "Fri", totalAmount: 67000, transactions: 15 }
-      ],
+      daily: Array.from(dailyMap.values()),
+      weekly: Array.from(weeklyMap.values()),
+      monthly: Array.from(monthlyMap.values()),
 
-      weekly: [
-        { date: "Week 1", totalAmount: 220000, transactions: 65 },
-        { date: "Week 2", totalAmount: 310000, transactions: 82 }
-      ],
+      totalSales,
+      totalTransactions,
 
-      monthly: [
-        { date: "Jan", totalAmount: 850000, transactions: 240 },
-        { date: "Feb", totalAmount: 920000, transactions: 265 }
-      ],
+      topProducts: Array.from(productMap.values()).sort(
+        (a, b) => b.revenue - a.revenue
+      ),
 
-      totalSales: 1770000,
-      totalTransactions: 505,
-
-      topProducts: [
-        {
-          productId: "1",
-          name: "Indomie",
-          quantitySold: 420,
-          revenue: 210000
-        },
-        {
-          productId: "2",
-          name: "Coca-Cola",
-          quantitySold: 310,
-          revenue: 186000
-        }
-      ],
-
-      staffPerformance: [
-        {
-          staffId: "s1",
-          staffName: "John",
-          totalSales: 540000,
-          transactions: 140
-        },
-        {
-          staffId: "s2",
-          staffName: "Mary",
-          totalSales: 620000,
-          transactions: 170
-        }
-      ]
-    })
+      staffPerformance: Array.from(staffMap.values()).sort(
+        (a, b) => b.totalSales - a.totalSales
+      )
+    });
+  }
 }));
