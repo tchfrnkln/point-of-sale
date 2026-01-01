@@ -13,6 +13,7 @@ import { useAuthStore } from "@/store/auth.store";
 import { useUserStore } from "@/store/user.store";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect } from "react";
+import { ArrowLeft } from "lucide-react";
 
 export default function SignUp({name}:{name:string}) {
 
@@ -81,6 +82,16 @@ export default function SignUp({name}:{name:string}) {
             </Button>
         </FieldGroup>
       </FieldSet>
+
+      {/* FLOATING BACK BUTTON */}
+      <Button
+        onClick={() => router.back()}
+        size="icon"
+        variant="secondary"
+        className="fixed bottom-6 left-6 z-50 h-12 w-12 rounded-full shadow-lg hover:scale-105 transition"
+      >
+        <ArrowLeft className="h-5 w-5" />
+      </Button>
     </div>
   )
 }
