@@ -10,6 +10,9 @@ import {
 import { Input } from "@/components/ui/input"
 import { Button } from "../../ui/button"
 import { useAuthStore } from "@/store/auth.store";
+import { useUserStore } from "@/store/user.store";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect } from "react";
 
 export default function SignUp({name}:{name:string}) {
 
@@ -23,6 +26,19 @@ export default function SignUp({name}:{name:string}) {
     signup,
     loading,
   } = useAuthStore()
+
+  const router = useRouter()
+  const pathname = usePathname()
+  const { session } = useUserStore()
+
+    useEffect(() => {
+      if (!session) return router.replace("/auth")
+  
+      // STAFF restrictions
+      if (session.role !== "ADMIN") {
+        router.replace("/dashboard/pos")
+      }
+    }, [session, pathname, router])
 
   return (
     <div className="w-full max-w-md">
