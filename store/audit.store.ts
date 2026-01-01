@@ -1,7 +1,6 @@
 import { create } from "zustand";
 import { supabase } from "@/lib/supabase/client";
-
-export type PaymentType = "cash" | "card" | "transfer";
+import { PaymentType } from "./pos.store";
 
 export type SaleLog = {
   id: string;
@@ -56,11 +55,11 @@ export const useAuditLogStore = create<AuditLogStore>((set, get) => ({
     const mapped: SaleLog[] = data.map(row => ({
       id: row.id,
       productName: row.product_name,
-      quantity: row.quantity,
+      quantity: Number(row.quantity),
       pricePerUnit: Number(row.price_per_unit),
       totalPrice: Number(row.total_price),
       soldBy: row.sold_by,
-      paymentType: row.payment_type,
+      paymentType: (row.payment_type as PaymentType).toUpperCase() as PaymentType,
       timestamp: row.created_at
     }));
 
@@ -68,18 +67,24 @@ export const useAuditLogStore = create<AuditLogStore>((set, get) => ({
   },
 
   addLog: async log => {
+    const newId = crypto.randomUUID();
+
     const { error } = await supabase.from("audit_logs").insert({
+      id: newId,
       product_name: log.productName,
       quantity: log.quantity,
       price_per_unit: log.pricePerUnit,
       total_price: log.totalPrice,
       sold_by: log.soldBy,
-      payment_type: log.paymentType
+      payment_type: log.paymentType.toUpperCase() as PaymentType
     });
 
-    if (!error) {
-      await get().fetchLogs();
+    if (error) {
+      console.error("Failed to insert log:", error);
+      return;
     }
+
+    await get().fetchLogs();
   },
 
   setUsernameFilter: username => {
@@ -99,12 +104,11 @@ export const useAuditLogStore = create<AuditLogStore>((set, get) => ({
 
   applyFilters: () => {
     const { logs, usernameFilter, paymentFilter, dateRange } = get();
-
     let result = [...logs];
 
-    if (usernameFilter) {
+    if (usernameFilter?.trim()) {
       result = result.filter(l =>
-        l.soldBy.toLowerCase().includes(usernameFilter.toLowerCase())
+        l.soldBy.toLowerCase().includes(usernameFilter.trim().toLowerCase())
       );
     }
 
@@ -113,15 +117,13 @@ export const useAuditLogStore = create<AuditLogStore>((set, get) => ({
     }
 
     if (dateRange?.from) {
-      result = result.filter(
-        l => new Date(l.timestamp) >= new Date(dateRange.from!)
-      );
+      const from = new Date(dateRange.from);
+      result = result.filter(l => new Date(l.timestamp) >= from);
     }
 
     if (dateRange?.to) {
-      result = result.filter(
-        l => new Date(l.timestamp) <= new Date(dateRange.to!)
-      );
+      const to = new Date(dateRange.to);
+      result = result.filter(l => new Date(l.timestamp) <= to);
     }
 
     set({ filteredLogs: result });

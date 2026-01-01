@@ -13,6 +13,8 @@ import { findProduct } from "@/lib/inventory/inventory";
 import { useEffect, useRef } from "react";
 import { useInventoryStore } from "@/store/inventory.store";
 import { UserInfo } from "@/components/features/dashboard/UserInfo";
+import { useUserStore } from "@/store/user.store";
+import { useAuditLogStore } from "@/store/audit.store";
 
 export default function POSPage() {
 
@@ -29,6 +31,8 @@ export default function POSPage() {
   } = usePOSStore();
 
   const {reduceStock} = useInventoryStore();
+  const { session } = useUserStore();
+  const { addLog } = useAuditLogStore();
 
   const total = cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
   const paid = payments.reduce((sum, p) => sum + p.amount, 0);
@@ -39,6 +43,10 @@ export default function POSPage() {
 
   function printReceipt(cart: CartItem[], businessInfo: BusinessInfo) {
     if (cart.length === 0) return;
+
+    const lastPayment = payments[payments.length - 1]
+
+    const paymentType: PaymentType = lastPayment?.type ?? "CARD";
   
     // Prepare receipt text
     let receipt = "";
@@ -63,11 +71,22 @@ export default function POSPage() {
     // In Electron, you can send this string to the main process for printing
     // Example:
 
+    
     if (window.electron) {
-        window.electron.print(receipt);
-        reduceStock(cart);
-        clearSale();
-        toast.success("Stock updated!");
+      window.electron.print(receipt);
+      cart.forEach(item => {
+        addLog({
+          productName: item.name,
+          quantity: item.quantity,
+          pricePerUnit: item.price,
+          totalPrice: item.price * item.quantity,
+          soldBy: session?.username ?? "unknown",
+          paymentType: paymentType
+        });
+      });
+      reduceStock(cart);
+      clearSale();
+      toast.success("Stock updated!");
     } else {
         toast.error("Electron not ready!");
       console.log("Print output (Electron not ready):\n", receipt);

@@ -22,8 +22,8 @@ import {
   SelectItem,
   SelectValue
 } from "@/components/ui/select";
+import { PaymentType } from "@/store/pos.store";
 
-import type { PaymentType } from "@/store/audit.store";
 
 export default function AuditLogsPage() {
   const {
@@ -68,17 +68,18 @@ export default function AuditLogsPage() {
           <Select
             value={paymentType}
             onValueChange={value => {
-              setPaymentType(value as PaymentType);
-              setPaymentFilter(value as PaymentType);
+              const type = value.toUpperCase() as PaymentType;
+              setPaymentType(type);
+              setPaymentFilter(type);
             }}
           >
             <SelectTrigger>
               <SelectValue placeholder="Payment type" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="cash">Cash</SelectItem>
-              <SelectItem value="card">Card</SelectItem>
-              <SelectItem value="transfer">Transfer</SelectItem>
+              <SelectItem value="CASH">Cash</SelectItem>
+              <SelectItem value="CARD">Card</SelectItem>
+              <SelectItem value="TRANSFER">Transfer</SelectItem>
             </SelectContent>
           </Select>
 
@@ -150,8 +151,8 @@ export default function AuditLogsPage() {
                 <TableRow key={log.id}>
                   <TableCell>{log.productName}</TableCell>
                   <TableCell>{log.quantity}</TableCell>
-                  <TableCell>₦{log.pricePerUnit}</TableCell>
-                  <TableCell>₦{log.totalPrice}</TableCell>
+                  <TableCell>₦{log.pricePerUnit.toLocaleString()}</TableCell>
+                  <TableCell>₦{log.totalPrice.toLocaleString()}</TableCell>
                   <TableCell className="capitalize">
                     {log.paymentType}
                   </TableCell>
