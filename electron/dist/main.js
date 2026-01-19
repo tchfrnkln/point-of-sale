@@ -7,10 +7,6 @@ const electron_1 = require("electron");
 const path_1 = __importDefault(require("path"));
 const escpos_1 = __importDefault(require("escpos"));
 const escpos_usb_1 = __importDefault(require("escpos-usb")); //test to see issues
-// Disable GPU (fixes Mesa errors)
-electron_1.app.disableHardwareAcceleration();
-// Force X11 instead of Wayland
-electron_1.app.commandLine.appendSwitch("ozone-platform", "x11");
 // ----------------------
 // WINDOW
 // ----------------------
@@ -26,7 +22,15 @@ function createWindow() {
         },
     });
     // DEV
-    mainWindow.loadURL("http://localhost:3000");
+    // if (app.isPackaged) {
+    // mainWindow.loadFile(
+    //   path.join(__dirname, "../../out/index.html")
+    // )
+    // } else {
+    mainWindow.loadURL("https://geodis.com.ng/");
+    // mainWindow.loadURL("http://localhost:3000")
+    //   mainWindow.webContents.openDevTools()
+    // }
     mainWindow.on("closed", () => {
         mainWindow = null;
     });

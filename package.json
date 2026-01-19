@@ -1,9 +1,9 @@
 {
   "name": "point-of-sale",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "author": {
-    "name": "Azuony Tochukwu Franklin",
+    "name": "tchfrnkln",
     "email": "franktochi156@gmail.com",
     "url": "https://github.com/tchfrnkln"
   },
@@ -93,7 +93,7 @@
 
     "files": [
       "electron/dist/**/*",
-      ".next/**/*",
+      "out/**/*",
       "public/**/*",
       "package.json"
     ],

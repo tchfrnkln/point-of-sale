@@ -43,7 +43,15 @@ function createWindow(): void {
   });
 
   // DEV
-  mainWindow.loadURL("http://localhost:3000");
+  // if (app.isPackaged) {
+    // mainWindow.loadFile(
+    //   path.join(__dirname, "../../out/index.html")
+    // )
+  // } else {
+    mainWindow.loadURL("https://geodis.com.ng/")
+    // mainWindow.loadURL("http://localhost:3000")
+  //   mainWindow.webContents.openDevTools()
+  // }
 
   mainWindow.on("closed", () => {
     mainWindow = null;

@@ -88,7 +88,7 @@ export default function POSPage() {
       clearSale();
       toast.success("Stock updated!");
     } else {
-        toast.error("Electron not ready!");
+      toast.error("Electron not ready!");
       console.log("Print output (Electron not ready):\n", receipt);
     }
   }
