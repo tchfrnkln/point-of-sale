@@ -3,7 +3,6 @@ import path from "path";
 import escpos from "escpos";
 import USB from "escpos-usb"; //test to see issues
 
-
 // ----------------------
 // TYPES
 // ----------------------

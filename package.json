@@ -92,7 +92,7 @@
     },
 
     "files": [
-      "dist-electron/**/*",
+      "electron/dist/**/*",
       ".next/**/*",
       "public/**/*",
       "package.json"
