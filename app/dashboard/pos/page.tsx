@@ -107,7 +107,11 @@ export default function POSPage() {
               <pre>${receipt.replace(
                 `*** ${businessInfo.name} ***`,
                 `<span class="business-name">*** ${businessInfo.name} ***</span>`
-              )}</pre>
+              )
+              .replace(
+                  `TOTAL: ₦${total.toLocaleString()}`,
+                  `<span class="business-name">TOTAL: ₦${total.toLocaleString()}</span>`
+                )}</pre>
             </body>
           </html>
         `);
