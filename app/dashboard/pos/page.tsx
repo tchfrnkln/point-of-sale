@@ -83,6 +83,7 @@ export default function POSPage() {
               body {
                 font-family: monospace;
                 margin: 0 auto;
+                margin-top: 0px;
                 padding: 13px;
                 padding-bottom: 40px;   /* ← Added more bottom margin/space */
                 font-size: 16px;
@@ -90,7 +91,6 @@ export default function POSPage() {
                 line-height: 1.6;       /* Slight spacing for readability */
               }
               pre {
-                white-space: pre-wrap;
                 margin: 0;
               }
             </style>
