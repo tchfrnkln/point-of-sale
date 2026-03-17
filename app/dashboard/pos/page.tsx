@@ -42,87 +42,98 @@ export default function POSPage() {
 
 
   function printReceipt(cart: CartItem[], businessInfo: BusinessInfo) {
-  if (cart.length === 0) return;
+    if (cart.length === 0) return;
 
-  const lastPayment = payments[payments.length - 1]
+    const lastPayment = payments[payments.length - 1]
 
-  const paymentType: PaymentType = lastPayment?.type ?? "CARD";
+    const paymentType: PaymentType = lastPayment?.type ?? "CARD";
 
-  // Prepare receipt text
-  let receipt = "";
+    // Prepare receipt text
+    let receipt = "";
 
-  // Business logo and name
-  // if (businessInfo.logoUrl) {
-  //   receipt += `[LOGO: ${businessInfo.logoUrl}]\n`;
-  // }
-  receipt += `*** ${businessInfo.name} ***\n\n`;
+    // Business logo and name
+    // if (businessInfo.logoUrl) {
+    //   receipt += `[LOGO: ${businessInfo.logoUrl}]\n`;
+    // }
+    receipt += `*** ${businessInfo.name} ***\n\n`;
 
-  // Cart items
-  cart.forEach(item => {
-    receipt += `${item.name} x${item.quantity} = ₦${(item.price * item.quantity).toLocaleString()}\n`;
-  });
-
-  // Total
-  const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-  receipt += `\nTOTAL: ₦${total.toLocaleString()}\n`;
-  receipt += "-----------------------\n";
-  receipt += "Thank you for your purchase!\n";
-
-  // FIX: Safe check + fallback print
-  if (window.electron?.print && typeof window.electron.print === 'function') {
-    window.electron.print(receipt);
-  } else {
-    // Fallback: styled print window
-    const printWindow = window.open('', '_blank');
-    if (printWindow) {
-      printWindow.document.write(`
-        <html>
-          <head>
-            <title>Receipt</title>
-            <style>
-              body {
-                font-family: monospace;
-                margin: 0 auto;
-                padding: 10px;
-                padding-bottom: 40px;   /* ← Added more bottom margin/space */
-                font-size: 15px;
-                font-weight: 900;       /* ← Makes text very bold (heaviest weight) */
-                line-height: 1.5;       /* Slight spacing for readability */
-              }
-              pre {
-                white-space: pre-wrap;
-                margin: 0;
-              }
-            </style>
-          </head>
-          <body>
-            <pre>${receipt}</pre>
-          </body>
-        </html>
-      `);
-      printWindow.document.close();
-      printWindow.focus();
-      printWindow.print();
-    } else {
-      toast.error("Could not open print window – check popup blocker");
-      console.log("Receipt fallback (print dialog blocked):\n", receipt);
-    }
-  }
-
-  cart.forEach(item => {
-    addLog({
-      productName: item.name,
-      quantity: item.quantity,
-      pricePerUnit: item.price,
-      totalPrice: item.price * item.quantity,
-      soldBy: session?.username ?? "unknown",
-      paymentType: paymentType
+    // Cart items
+    cart.forEach(item => {
+      receipt += `${item.name} x${item.quantity} = ₦${(item.price * item.quantity).toLocaleString()}\n`;
     });
-  });
-  reduceStock(cart);
-  clearSale();
-  toast.success("Stock updated!");
-}
+
+    // Total
+    const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    receipt += `\nTOTAL: ₦${total.toLocaleString()}\n`;
+    receipt += "-----------------------\n";
+    receipt += "Thank you for your purchase!\n";
+
+    // FIX: Safe check + fallback print
+    if (window.electron?.print && typeof window.electron.print === 'function') {
+      window.electron.print(receipt);
+    } else {
+      // Fallback: styled print window
+      const printWindow = window.open('', '_blank');
+      if (printWindow) {
+        printWindow.document.write(`
+          <html>
+            <head>
+              <title>Receipt</title>
+              <style>
+                body {
+                  font-family: monospace;
+                  margin: 0 auto;
+                  padding: 10px;
+                  padding-bottom: 40px;
+                  font-size: 13px;
+                  font-weight: 900;
+                  line-height: 1.4;
+                }
+                pre {
+                  white-space: pre-wrap;
+                  margin: 0;
+                }
+                .business-name {
+                  display: block;
+                  font-size: 16px;          /* Much larger font size for business name */
+                  font-weight: 900;         /* Extremely bold */
+                  text-align: center;
+                  margin: 10px 0 15px 0;    /* Extra spacing around it */
+                  letter-spacing: 1px;
+                }
+              </style>
+            </head>
+            <body>
+              <pre>${receipt.replace(
+                `*** ${businessInfo.name} ***`,
+                `<span class="business-name">*** ${businessInfo.name} ***</span>`
+              )}</pre>
+            </body>
+          </html>
+        `);
+        printWindow.document.close();
+        printWindow.focus();
+        printWindow.print();
+      } else {
+        toast.error("Could not open print window – check popup blocker");
+        console.log("Receipt fallback (print dialog blocked):\n", receipt);
+      }
+    }
+
+    cart.forEach(item => {
+      addLog({
+        productName: item.name,
+        quantity: item.quantity,
+        pricePerUnit: item.price,
+        totalPrice: item.price * item.quantity,
+        soldBy: session?.username ?? "unknown",
+        paymentType: paymentType
+      });
+    });
+    reduceStock(cart);
+    clearSale();
+    toast.success("Stock updated!");
+  }
 
 
   return (
