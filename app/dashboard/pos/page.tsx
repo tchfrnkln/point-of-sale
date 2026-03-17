@@ -68,29 +68,49 @@ export default function POSPage() {
     receipt += "-----------------------\n";
     receipt += "Thank you for your purchase!\n";
   
-    // In Electron, you can send this string to the main process for printing
-    // Example:
-
-    
-    if (window.electron) {
+    // FIX: Safe check + fallback print
+    if (window.electron?.print && typeof window.electron.print === 'function') {
       window.electron.print(receipt);
-      cart.forEach(item => {
-        addLog({
-          productName: item.name,
-          quantity: item.quantity,
-          pricePerUnit: item.price,
-          totalPrice: item.price * item.quantity,
-          soldBy: session?.username ?? "unknown",
-          paymentType: paymentType
-        });
-      });
-      reduceStock(cart);
-      clearSale();
-      toast.success("Stock updated!");
     } else {
-      toast.error("Electron not ready!");
-      console.log("Print output (Electron not ready):\n", receipt);
+      // Fallback: styled print window
+      const printWindow = window.open('', '_blank');
+      if (printWindow) {
+        printWindow.document.write(`
+          <html>
+            <head>
+              <title>Receipt</title>
+              <style>
+                body { font-family: monospace; width: 80mm; margin: 0 auto; padding: 10px; font-size: 12px; }
+                pre { white-space: pre-wrap; }
+              </style>
+            </head>
+            <body>
+              <pre>${receipt}</pre>
+            </body>
+          </html>
+        `);
+        printWindow.document.close();
+        printWindow.focus();
+        printWindow.print();
+      } else {
+        toast.error("Could not open print window – check popup blocker");
+        console.log("Receipt fallback (print dialog blocked):\n", receipt);
+      }
     }
+
+    cart.forEach(item => {
+      addLog({
+        productName: item.name,
+        quantity: item.quantity,
+        pricePerUnit: item.price,
+        totalPrice: item.price * item.quantity,
+        soldBy: session?.username ?? "unknown",
+        paymentType: paymentType
+      });
+    });
+    reduceStock(cart);
+    clearSale();
+    toast.success("Stock updated!");
   }
 
 
