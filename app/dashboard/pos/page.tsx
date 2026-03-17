@@ -97,7 +97,6 @@ export default function POSPage() {
                   display: block;
                   font-size: 16px;          /* Much larger font size for business name */
                   font-weight: 900;         /* Extremely bold */
-                  text-align: center;
                   margin: 10px 0 15px 0;    /* Extra spacing around it */
                   letter-spacing: 1px;
                 }
