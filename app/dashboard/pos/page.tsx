@@ -52,9 +52,9 @@ export default function POSPage() {
     let receipt = "";
   
     // Business logo and name
-    if (businessInfo.logoUrl) {
-      receipt += `[LOGO: ${businessInfo.logoUrl}]\n`;
-    }
+    // if (businessInfo.logoUrl) {
+    //   receipt += `[LOGO: ${businessInfo.logoUrl}]\n`;
+    // }
     receipt += `*** ${businessInfo.name} ***\n\n`;
   
     // Cart items

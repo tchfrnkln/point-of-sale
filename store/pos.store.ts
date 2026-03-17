@@ -43,7 +43,7 @@ export type BusinessInfo = {
 }
 
 export const businessInfo: BusinessInfo = { 
-    name: "My Business", 
+    name: "GEODIS ELECTRONICS & APPLIANCES", 
     logoUrl: "logo.png" 
 }
 
