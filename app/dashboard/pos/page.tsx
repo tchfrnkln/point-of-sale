@@ -83,14 +83,14 @@ export default function POSPage() {
               body {
                 font-family: monospace;
                 margin: 0 auto;
-                margin-top: 0px;
-                padding: 13px;
+                padding: 10px;
                 padding-bottom: 40px;   /* ← Added more bottom margin/space */
-                font-size: 16px;
+                font-size: 15px;
                 font-weight: 900;       /* ← Makes text very bold (heaviest weight) */
-                line-height: 1.6;       /* Slight spacing for readability */
+                line-height: 1.5;       /* Slight spacing for readability */
               }
               pre {
+                white-space: pre-wrap;
                 margin: 0;
               }
             </style>
