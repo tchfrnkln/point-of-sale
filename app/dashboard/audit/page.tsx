@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useAuditLogStore } from "@/store/audit.store";
+import { SaleLog, useAuditLogStore } from "@/store/audit.store";
 import { UserInfo } from "@/components/features/dashboard/UserInfo";
 
 import { Card, CardContent } from "@/components/ui/card";
@@ -23,6 +23,7 @@ import {
   SelectValue
 } from "@/components/ui/select";
 import { PaymentType } from "@/store/pos.store";
+import { useReturnsStore } from "@/store/returns.store";
 
 
 export default function AuditLogsPage() {
@@ -34,6 +35,8 @@ export default function AuditLogsPage() {
     setDateRange,
     resetFilters
   } = useAuditLogStore();
+
+  const { processReturn } = useReturnsStore();
 
   const [username, setUsername] = useState("");
   const [paymentType, setPaymentType] = useState<PaymentType | "">("");
@@ -48,6 +51,14 @@ export default function AuditLogsPage() {
     (sum, log) => sum + log.totalPrice,
     0
   );
+
+  const handleReturn = (log: SaleLog) => {
+    if (confirm(`Are you sure you want to mark "${log.productName}" (Qty: ${log.quantity}) as returned?`)) {
+        // processReturn(id, returnedQuantity, reason)
+      processReturn(log.id, log.quantity, "Customer return")
+      // console.log(log.id, log.quantity);
+    }
+  };
 
   return (
     <div className="p-6 space-y-6">
@@ -143,6 +154,7 @@ export default function AuditLogsPage() {
                 <TableHead>Payment</TableHead>
                 <TableHead>Sold By</TableHead>
                 <TableHead>Date</TableHead>
+                <TableHead className="w-20 text-center">Actions</TableHead>
               </TableRow>
             </TableHeader>
 
@@ -160,13 +172,24 @@ export default function AuditLogsPage() {
                   <TableCell>
                     {new Date(log.timestamp).toLocaleString()}
                   </TableCell>
+                  <TableCell>
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      className="w-full flex items-center gap-1"
+                      onClick={() => handleReturn(log)}
+                    >
+                      {/* <span className="text-xs">↩</span> */}
+                      Return
+                    </Button>
+                  </TableCell>
                 </TableRow>
               ))}
 
               {filteredLogs.length === 0 && (
                 <TableRow>
                   <TableCell
-                    colSpan={7}
+                    colSpan={8}
                     className="text-center text-muted-foreground"
                   >
                     No records found

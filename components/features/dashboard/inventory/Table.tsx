@@ -53,7 +53,7 @@ export function InventoryTable() {
 
         <TableBody>
           {filteredInventory.map((item, index) => (
-            <TableRow key={item.id}>
+            <TableRow key={item.id} className={`${item.stockAmount === 0 ? 'text-red-500' : ''}`}>
               <TableCell className="font-medium">
                 {index + 1}.
               </TableCell>
