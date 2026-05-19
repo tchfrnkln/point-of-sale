@@ -75,7 +75,7 @@ export default function SignUp({name}:{name:string}) {
           </Field>
 
             <Button variant="outline" 
-                onClick={()=> signup()}
+                onClick={()=> signup(session?.store_id)}
                 disabled={loading}
                 type="submit" >
                 Submit

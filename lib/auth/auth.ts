@@ -2,10 +2,11 @@
 
 import { supabase } from "../supabase/client";
 
-export async function signUp({ email, username, password }:{
+export async function signUp({ email, username, password, store_id }:{
     email: string;
     username: string;
     password: string;
+    store_id: string | undefined;
 }) {
 
   const { data, error } = await supabase.auth.signUp({
@@ -19,7 +20,8 @@ export async function signUp({ email, username, password }:{
   const { error: profileError } = await supabase.from("profiles").insert({
     id: data.user?.id,
     username,
-    email
+    email,
+    store_id,
   });
 
   if (profileError) throw profileError;
@@ -36,7 +38,7 @@ export async function login({ username, password }:{
   const { data: profile } = await supabase
     .from("profiles")
     .select("email")
-    .eq("username", username)
+    .or(`username.eq.${username},email.eq.${username}`) 
     .single();
 
   if (!profile) throw new Error("User not found");

@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { supabase } from "@/lib/supabase/client";
+import { isValidUUID } from "./inventory.store";
 
 /* ===================== TYPES ===================== */
 
@@ -15,7 +16,7 @@ type ExpiryStore = {
   products: Product[];
   expiredProducts: Product[];
 
-  fetchInventory: () => Promise<void>;
+  fetchInventory: (id:string | undefined) => Promise<void>;
   deleteExpiredProduct: (id: string) => Promise<void>;
 };
 
@@ -26,10 +27,15 @@ export const useExpiryStore = create<ExpiryStore>((set) => ({
   expiredProducts: [],
 
   /* ================= FETCH INVENTORY ================= */
-  fetchInventory: async () => {
+  fetchInventory: async (id) => {
+
+    if(id == undefined) return
+    if(!isValidUUID(id)) return
+
     const { data, error } = await supabase
       .from("inventory")
-      .select("id, product_name, stock_amount, expiry_date");
+      .select("id, product_name, stock_amount, expiry_date")
+      .eq('store_id', id);
 
     if (error || !data) {
       console.error("Failed to fetch inventory", error);

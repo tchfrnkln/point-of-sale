@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { supabase } from "@/lib/supabase/client";
 import { PaymentType } from "./pos.store";
+import { isValidUUID } from "./inventory.store";
 
 export type SaleLog = {
   id: string;
@@ -26,8 +27,8 @@ type AuditLogStore = {
   paymentFilter?: PaymentType;
   dateRange?: DateRange;
 
-  fetchLogs: () => Promise<void>;
-  addLog: (log: Omit<SaleLog, "id" | "timestamp">) => Promise<void>;
+  fetchLogs: (store_id:string | undefined) => Promise<void>;
+  addLog: (log: Omit<SaleLog, "id" | "timestamp">, store_id: string | undefined) => Promise<void>;
 
   setUsernameFilter: (username?: string) => void;
   setPaymentFilter: (type?: PaymentType) => void;
@@ -41,10 +42,14 @@ export const useAuditLogStore = create<AuditLogStore>((set, get) => ({
   logs: [],
   filteredLogs: [],
 
-  fetchLogs: async () => {
+  fetchLogs: async (store_id) => {
+    if(!store_id || !isValidUUID(store_id)) return
+    
+
     const { data, error } = await supabase
       .from("audit_logs")
       .select("*")
+      .eq("store_id", store_id)
       .order("created_at", { ascending: false });
 
     if (error) {
@@ -66,7 +71,7 @@ export const useAuditLogStore = create<AuditLogStore>((set, get) => ({
     set({ logs: mapped, filteredLogs: mapped });
   },
 
-  addLog: async log => {
+  addLog: async (log, store_id) => {
     const newId = crypto.randomUUID();
 
     const { error } = await supabase.from("audit_logs").insert({
@@ -84,7 +89,7 @@ export const useAuditLogStore = create<AuditLogStore>((set, get) => ({
       return;
     }
 
-    await get().fetchLogs();
+    await get().fetchLogs(store_id);
   },
 
   setUsernameFilter: username => {

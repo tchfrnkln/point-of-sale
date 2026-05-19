@@ -2,7 +2,7 @@ import { create } from 'zustand';
 import { supabase } from '@/lib/supabase/client';
 import { toast } from 'sonner';
 import { useAuditLogStore } from './audit.store';
-import { useInventoryStore } from './inventory.store';
+import { isValidUUID, useInventoryStore } from './inventory.store';
 
 export type ReturnLog = {
   id: string;
@@ -35,27 +35,31 @@ type ReturnsStore = {
   returns: ReturnLog[];
   loading: boolean;
 
-  fetchReturns: () => Promise<void>;
+  fetchReturns: (id:string | undefined) => Promise<void>;
 
   processReturn: (
     saleLogId: string,
     returnedQuantity: number,
-    reason?: string
+    reason?: string,
+    store_id?: string | undefined
   ) => Promise<void>;
 
-  deleteReturn: (returnId: string) => Promise<void>;
+  deleteReturn: (returnId: string, store_id: string | undefined) => Promise<void>;
 };
 
 export const useReturnsStore = create<ReturnsStore>((set, get) => ({
   returns: [],
   loading: false,
 
-  fetchReturns: async () => {
+  fetchReturns: async (id) => {
+    if(id == undefined) return
+    if(!isValidUUID(id)) return
     set({ loading: true });
 
     const { data, error } = await supabase
       .from('returns')
       .select('*')
+      .eq('store_id', id)
       .order('created_at', { ascending: false });
 
     if (error) {
@@ -80,9 +84,10 @@ export const useReturnsStore = create<ReturnsStore>((set, get) => ({
   },
 
   processReturn: async (
-    saleLogId: string,
-    returnedQuantity: number,
-    reason?: string
+    saleLogId,
+    returnedQuantity,
+    reason,
+    store_id
   ) => {
     try {
       // 1. Get sale details
@@ -145,9 +150,9 @@ export const useReturnsStore = create<ReturnsStore>((set, get) => ({
       }
 
       // 5. Refresh stores
-      await useInventoryStore.getState().fetchInventory();
-      await useAuditLogStore.getState().fetchLogs();
-      await get().fetchReturns();
+      await useInventoryStore.getState().fetchInventory(store_id);
+      await useAuditLogStore.getState().fetchLogs(store_id);
+      await get().fetchReturns(store_id);
 
       toast.success(
         `Return processed: ${returnedQuantity} × ${typedSaleLog.product_name}`
@@ -160,13 +165,13 @@ export const useReturnsStore = create<ReturnsStore>((set, get) => ({
     }
   },
 
-  deleteReturn: async (returnId: string) => {
+  deleteReturn: async (returnId, store_id) => {
     const { error } = await supabase.from('returns').delete().eq('id', returnId);
     if (error) {
       toast.error("Failed to delete return record");
     } else {
       toast.success("Return record deleted");
-      await get().fetchReturns();
+      await get().fetchReturns(store_id);
     }
   },
 }));

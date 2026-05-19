@@ -3,6 +3,11 @@ import { create } from 'zustand'
 import { CartItem } from './pos.store'
 import { toast } from 'sonner'
 
+export function isValidUUID(uuid:string) {
+  const regex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+  return regex.test(uuid);
+}
+
 export type InventoryItem = {
   id: string
   barcode: string
@@ -18,7 +23,7 @@ type InventoryStore = {
   searchQuery: string
   loading: boolean
 
-  fetchInventory: () => Promise<void>
+  fetchInventory: (id:string | undefined) => Promise<void>
   setSearchQuery: (q: string) => void
   setActiveItem: (id: string | 'createNew') => void
   updateActiveItem: <K extends keyof InventoryItem>(
@@ -46,12 +51,17 @@ export const useInventoryStore = create<InventoryStore>((set, get) => ({
 
   setSearchQuery: (q) => set({ searchQuery: q }),
 
-  fetchInventory: async () => {
+  fetchInventory: async (id) => {
+    if(id == undefined) return
+    if(!isValidUUID(id)) return
+
     set({ loading: true })
+
 
     const { data, error } = await supabase
       .from('inventory')
       .select('*')
+      .eq('store_id', id)
       .order('created_at', { ascending: false })
 
     if (error) {

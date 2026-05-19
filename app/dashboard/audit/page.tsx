@@ -24,6 +24,7 @@ import {
 } from "@/components/ui/select";
 import { PaymentType } from "@/store/pos.store";
 import { useReturnsStore } from "@/store/returns.store";
+import { useUserStore } from "@/store/user.store";
 
 
 export default function AuditLogsPage() {
@@ -37,6 +38,8 @@ export default function AuditLogsPage() {
   } = useAuditLogStore();
 
   const { processReturn } = useReturnsStore();
+  const { session } = useUserStore()
+  
 
   const [username, setUsername] = useState("");
   const [paymentType, setPaymentType] = useState<PaymentType | "">("");
@@ -44,8 +47,8 @@ export default function AuditLogsPage() {
   const [toDate, setToDate] = useState("");
 
   useEffect(() => {
-    fetchLogs();
-  }, [fetchLogs]);
+    fetchLogs(session?.store_id);
+  }, [fetchLogs, session?.store_id]);
 
   const totalSales = filteredLogs.reduce(
     (sum, log) => sum + log.totalPrice,
@@ -55,7 +58,7 @@ export default function AuditLogsPage() {
   const handleReturn = (log: SaleLog) => {
     if (confirm(`Are you sure you want to mark "${log.productName}" (Qty: ${log.quantity}) as returned?`)) {
         // processReturn(id, returnedQuantity, reason)
-      processReturn(log.id, log.quantity, "Customer return")
+      processReturn(log.id, log.quantity, "Customer return", session?.store_id)
       // console.log(log.id, log.quantity);
     }
   };

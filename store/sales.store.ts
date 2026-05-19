@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { supabase } from "@/lib/supabase/client";
+import { isValidUUID } from "./inventory.store";
 
 /* ===================== TYPES ===================== */
 
@@ -38,7 +39,7 @@ export type SalesAnalyticsState = {
   toDate: string;
 
   setDateRange: (from: string, to: string) => void;
-  fetchSales: () => Promise<void>;
+  fetchSales: (id:string | undefined) => Promise<void>;
 };
 
 /* ===================== STORE ===================== */
@@ -59,12 +60,15 @@ export const useSalesAnalyticsStore = create<SalesAnalyticsState>((set, get) => 
 
   setDateRange: (from, to) => set({ fromDate: from, toDate: to }),
 
-  fetchSales: async () => {
+  fetchSales: async (id) => {
+    if(id == undefined) return
+    if(!isValidUUID(id)) return
     const { fromDate, toDate } = get();
 
     let query = supabase
       .from("audit_logs")
-      .select("product_name, quantity, total_price, sold_by, created_at");
+      .select("product_name, quantity, total_price, sold_by, created_at")
+      .eq('store_id', id);
 
     if (fromDate) query = query.gte("created_at", fromDate);
     if (toDate) query = query.lte("created_at", `${toDate}T23:59:59`);

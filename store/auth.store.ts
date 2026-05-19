@@ -4,6 +4,7 @@ import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.share
 // import { error } from "console"
 import { toast } from "sonner"
 import { create } from "zustand"
+import { isValidUUID } from "./inventory.store"
 
 type AuthStore = {
   email:string
@@ -15,7 +16,7 @@ type AuthStore = {
   setPassword: (v: string) => void
   setRePassword: (v: string) => void
   login: (router?: AppRouterInstance) => Promise<void>
-  signup: () => Promise<void>
+  signup: (store_id:string | undefined) => Promise<void>
   recover: () => Promise<void>
   error: string | null
   loading: boolean
@@ -61,7 +62,9 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     }
   },
 
-  signup: async () => {
+  signup: async (store_id) => {
+    if(store_id == undefined) return
+    if(!isValidUUID(store_id)) return
     const { email, username, password } = get()
 
     if (!username || !password || !email){
@@ -74,7 +77,7 @@ export const useAuthStore = create<AuthStore>((set, get) => ({
     set({ loading: true, error: null })
 
     try {
-      await signUp({ email, username, password });
+      await signUp({ email, username, password, store_id });
       set({ loading: false, email: "", username: "", password: ""})
       toast.success("Signup successful!")
     }catch (err) {

@@ -18,11 +18,12 @@ import { useAuditLogStore } from "@/store/audit.store";
 
 export default function POSPage() {
 
-    const fetchInventory = useInventoryStore(s => s.fetchInventory)
-    
-      useEffect(() => {
-        fetchInventory()
-      }, [fetchInventory])
+  const fetchInventory = useInventoryStore(s => s.fetchInventory)
+  const { session } = useUserStore()
+      
+  useEffect(() => {
+    fetchInventory(session?.store_id || "")
+  }, [fetchInventory, session?.store_id])
 
   const {
     cart, addItem, updateQty, removeItem,
@@ -31,7 +32,6 @@ export default function POSPage() {
   } = usePOSStore();
 
   const {reduceStock} = useInventoryStore();
-  const { session } = useUserStore();
   const { addLog } = useAuditLogStore();
 
   const total = cart.reduce((sum, i) => sum + i.price * i.quantity, 0);
@@ -131,7 +131,7 @@ export default function POSPage() {
         totalPrice: item.price * item.quantity,
         soldBy: session?.username ?? "unknown",
         paymentType: paymentType
-      });
+      }, session?.store_id);
     });
     reduceStock(cart);
     clearSale();
@@ -155,7 +155,7 @@ export default function POSPage() {
               const query = inputRef.current?.value.trim();
               if (!query) return;
 
-              const product = await findProduct(query);
+              const product = await findProduct(query, session?.store_id);
               if (!product) return toast.error("Product not found");
               if (product.stockAmount <= 0) return toast.error("Out of stock");
 

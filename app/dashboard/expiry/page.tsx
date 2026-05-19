@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useExpiryStore } from "@/store/expiry.store";
 import { UserInfo } from "@/components/features/dashboard/UserInfo";
+import { useUserStore } from "@/store/user.store";
 
 export default function ExpiredProductsPage() {
   const {
@@ -22,10 +23,12 @@ export default function ExpiredProductsPage() {
     fetchInventory,
     deleteExpiredProduct
   } = useExpiryStore();
-
+  const { session } = useUserStore()
+    
+  
   useEffect(() => {
-    fetchInventory();
-  }, [fetchInventory]);
+    fetchInventory(session?.store_id)
+  }, [fetchInventory, session?.store_id])
 
   return (
     <div className="p-6 space-y-6">

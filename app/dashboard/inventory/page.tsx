@@ -5,13 +5,16 @@ import { TableDrawer } from "@/components/features/dashboard/inventory/Drawer"
 import { InventoryTable } from "@/components/features/dashboard/inventory/Table"
 import { useInventoryStore } from "@/store/inventory.store"
 import { UserInfo } from "@/components/features/dashboard/UserInfo"
+import { useUserStore } from "@/store/user.store"
 
 export default function Page() {
   const fetchInventory = useInventoryStore(s => s.fetchInventory)
+  const { session } = useUserStore()
+  
 
   useEffect(() => {
-    fetchInventory()
-  }, [fetchInventory])
+    fetchInventory(session?.store_id)
+  }, [fetchInventory, session?.store_id])
 
   return (
     <div className="p-6"> 

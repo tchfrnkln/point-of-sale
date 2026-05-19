@@ -9,6 +9,7 @@ export type UserSession = {
   email: string;
   role: UserRole;
   username: string;
+  store_id: string;
 };
 
 type UserStore = {
@@ -37,7 +38,7 @@ export const useUserStore = create<UserStore>((set) => ({
     // 🔥 FETCH FROM PROFILES TABLE
     const { data: profile, error: profileError } = await supabase
       .from("profiles")
-      .select("username, role")
+      .select("username, role, store_id")
       .eq("id", user.id)
       .single();
 
@@ -52,7 +53,8 @@ export const useUserStore = create<UserStore>((set) => ({
         userId: user.id,
         email: user.email ?? "",
         username: profile.username,
-        role: profile.role ?? "STAFF"
+        role: profile.role ?? "STAFF",
+        store_id: profile.store_id ?? ""
       }
     });
   },

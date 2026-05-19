@@ -21,6 +21,7 @@ import { handleExcelExport, handlePDFExport } from "@/lib/exports/handler";
 import { UserInfo } from "@/components/features/dashboard/UserInfo";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { useUserStore } from "@/store/user.store";
 
 export default function AdminSalesPage() {
   const {
@@ -36,10 +37,12 @@ export default function AdminSalesPage() {
     setDateRange,
     fetchSales
   } = useSalesAnalyticsStore();
+  const { session } = useUserStore()
+
 
   useEffect(() => {
-    fetchSales();
-  }, [fetchSales]);
+    fetchSales(session?.store_id);
+  }, [fetchSales, session?.store_id]);
 
   return (
     <div className="p-6 space-y-6">
@@ -66,7 +69,7 @@ export default function AdminSalesPage() {
             />
           </div>
 
-          <Button onClick={fetchSales}>Apply</Button>
+          <Button onClick={() => fetchSales(session?.store_id)}>Apply</Button>
         </CardContent>
       </Card>
 
