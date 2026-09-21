@@ -26,7 +26,7 @@ export const UserInfo = ({ name }: { name: string }) => {
 
         <div className="flex items-center gap-6">
           <span className="text-sm text-muted-foreground">
-            Hello {session.username} 
+            Hello {session.username} from {session.store_name ?? "Unknown Store"}!
           </span>
           <LogoutButton />
         </div>

@@ -10,6 +10,7 @@ export type UserSession = {
   role: UserRole;
   username: string;
   store_id: string;
+  store_name?: string;
 };
 
 type UserStore = {
@@ -43,8 +44,20 @@ export const useUserStore = create<UserStore>((set) => ({
       .single();
 
     if (profileError || !profile) {
-      console.error("Failed to fetch profile:", profileError?.message);
+      console.log("Failed to fetch profile:", profileError?.message);
       set({ session: null });
+      return;
+    }
+
+    // 🔥 FETCH FROM Stores TABLE
+    const { data: stores, error: storesError } = await supabase
+      .from("stores")
+      .select("name, id")
+      .eq("id", profile.store_id)
+      .single();
+
+    if (storesError || !stores) {
+      console.log("Failed to fetch Stores:", storesError?.message);
       return;
     }
 
@@ -54,7 +67,8 @@ export const useUserStore = create<UserStore>((set) => ({
         email: user.email ?? "",
         username: profile.username,
         role: profile.role ?? "STAFF",
-        store_id: profile.store_id ?? ""
+        store_id: profile.store_id ?? "",
+        store_name: stores.name ?? ""
       }
     });
   },

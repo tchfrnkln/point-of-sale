@@ -55,7 +55,8 @@ export default function POSPage() {
     // if (businessInfo.logoUrl) {
     //   receipt += `[LOGO: ${businessInfo.logoUrl}]\n`;
     // }
-    receipt += `*** ${businessInfo.name} ***\n\n`;
+    // receipt += `*** ${businessInfo.name} ***\n\n`;
+    receipt += `*** ${session?.store_name} ***\n\n`;
 
     // Cart items
     cart.forEach(item => {
